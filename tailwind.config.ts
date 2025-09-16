@@ -57,11 +57,21 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Game-specific colors
+        game: {
+          player1: "hsl(var(--game-player1))",
+          player2: "hsl(var(--game-player2))",
+          platform: "hsl(var(--game-platform))",
+          background: "hsl(var(--game-background))",
+          danger: "hsl(var(--game-danger))",
+          goal: "hsl(var(--game-goal))",
+        },
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "gradient-game-bg": "var(--gradient-game-bg)",
+        "gradient-victory": "var(--gradient-victory)",
       },
       keyframes: {
         "accordion-down": {

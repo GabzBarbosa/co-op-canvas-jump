@@ -1,0 +1,134 @@
+export class Player {
+  position: { x: number; y: number };
+  velocity: { x: number; y: number };
+  width: number = 24;
+  height: number = 32;
+  color: string;
+  id: string;
+  grounded: boolean = false;
+  inGoal: boolean = false;
+  
+  private readonly maxSpeed = 200;
+  private readonly jumpPower = 400;
+  private readonly acceleration = 800;
+  private readonly friction = 600;
+  private readonly gravity = 1200;
+  
+  private startX: number;
+  private startY: number;
+
+  constructor(x: number, y: number, color: string, id: string) {
+    this.position = { x, y };
+    this.velocity = { x: 0, y: 0 };
+    this.color = color;
+    this.id = id;
+    this.startX = x;
+    this.startY = y;
+  }
+
+  moveLeft() {
+    this.velocity.x = Math.max(this.velocity.x - this.acceleration * (1/60), -this.maxSpeed);
+  }
+
+  moveRight() {
+    this.velocity.x = Math.min(this.velocity.x + this.acceleration * (1/60), this.maxSpeed);
+  }
+
+  stopMoving() {
+    if (this.grounded) {
+      if (this.velocity.x > 0) {
+        this.velocity.x = Math.max(0, this.velocity.x - this.friction * (1/60));
+      } else if (this.velocity.x < 0) {
+        this.velocity.x = Math.min(0, this.velocity.x + this.friction * (1/60));
+      }
+    }
+  }
+
+  jump() {
+    if (this.grounded) {
+      this.velocity.y = -this.jumpPower;
+      this.grounded = false;
+    }
+  }
+
+  canJump(): boolean {
+    return this.grounded;
+  }
+
+  update(deltaTime: number) {
+    // Apply gravity
+    if (!this.grounded) {
+      this.velocity.y += this.gravity * deltaTime;
+    }
+    
+    // Reset grounded state (will be set to true by collision detection if on ground)
+    this.grounded = false;
+    this.inGoal = false;
+    
+    // Update position
+    this.position.x += this.velocity.x * deltaTime;
+    this.position.y += this.velocity.y * deltaTime;
+  }
+
+  getBounds() {
+    return {
+      x: this.position.x,
+      y: this.position.y,
+      width: this.width,
+      height: this.height
+    };
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    // Draw player as a simple colored rectangle with pixel art style
+    ctx.fillStyle = this.color;
+    
+    // Main body
+    ctx.fillRect(
+      Math.floor(this.position.x), 
+      Math.floor(this.position.y), 
+      this.width, 
+      this.height
+    );
+    
+    // Add some pixel art details
+    ctx.fillStyle = this.id === "player1" ? "#27AE60" : "#2980B9"; // Slightly darker shade
+    
+    // Eyes
+    ctx.fillRect(Math.floor(this.position.x + 6), Math.floor(this.position.y + 8), 4, 4);
+    ctx.fillRect(Math.floor(this.position.x + 14), Math.floor(this.position.y + 8), 4, 4);
+    
+    // Simple animation based on movement
+    if (Math.abs(this.velocity.x) > 10) {
+      // Moving - add simple "legs"
+      const offset = Math.floor(Date.now() / 200) % 2;
+      ctx.fillRect(Math.floor(this.position.x + 4 + offset * 2), Math.floor(this.position.y + this.height - 8), 6, 8);
+      ctx.fillRect(Math.floor(this.position.x + 14 - offset * 2), Math.floor(this.position.y + this.height - 8), 6, 8);
+    } else {
+      // Standing still
+      ctx.fillRect(Math.floor(this.position.x + 6), Math.floor(this.position.y + this.height - 8), 6, 8);
+      ctx.fillRect(Math.floor(this.position.x + 12), Math.floor(this.position.y + this.height - 8), 6, 8);
+    }
+    
+    // Goal indicator
+    if (this.inGoal) {
+      ctx.strokeStyle = "#F39C12";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(
+        Math.floor(this.position.x - 4), 
+        Math.floor(this.position.y - 4), 
+        this.width + 8, 
+        this.height + 8
+      );
+    }
+  }
+
+  reset(x: number, y: number) {
+    this.position.x = x;
+    this.position.y = y;
+    this.velocity.x = 0;
+    this.velocity.y = 0;
+    this.grounded = false;
+    this.inGoal = false;
+  }
+}
