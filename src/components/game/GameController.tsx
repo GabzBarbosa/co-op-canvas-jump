@@ -1,10 +1,13 @@
 import { Player } from "./Player";
 import { Level } from "./Level";
 import { InputHandler } from "./InputHandler";
+import { LevelManager } from "./LevelManager";
+import { Enemy } from "./Enemy";
 
 interface GameCallbacks {
   onPlayerDeath: () => void;
   onVictory: () => void;
+  onLevelComplete: () => void;
 }
 
 export class GameController {
@@ -14,7 +17,7 @@ export class GameController {
   
   private player1: Player;
   private player2: Player;
-  private level: Level;
+  private levelManager: LevelManager;
   private inputHandler: InputHandler;
   
   private gameLoop: number | null = null;
@@ -28,11 +31,11 @@ export class GameController {
     this.callbacks = callbacks;
 
     // Initialize game objects
-    this.level = new Level();
+    this.levelManager = new LevelManager();
     this.inputHandler = new InputHandler(canvas);
     
     // Create players at starting positions
-    const startPos = this.level.getStartPosition();
+    const startPos = this.levelManager.getCurrentLevel().getStartPosition();
     this.player1 = new Player(startPos.x - 32, startPos.y, "#2ECC71", "player1"); // Green
     this.player2 = new Player(startPos.x + 32, startPos.y, "#3498DB", "player2"); // Blue
   }
@@ -60,6 +63,9 @@ export class GameController {
       // Update players
       this.updatePlayer(this.player1, this.inputHandler.player1Input, dt);
       this.updatePlayer(this.player2, this.inputHandler.player2Input, dt);
+      
+      // Update enemies
+      this.levelManager.updateEnemies(dt);
       
       // Check collisions
       this.checkCollisions();
@@ -98,7 +104,7 @@ export class GameController {
   }
 
   private handlePlayerCollisions(player: Player) {
-    const collisions = this.level.getCollisions(player.getBounds());
+    const collisions = this.levelManager.getCurrentLevel().getCollisions(player.getBounds());
     
     // Handle platform collisions
     collisions.platforms.forEach(platform => {
@@ -133,12 +139,34 @@ export class GameController {
   }
 
   private checkCollisions() {
-    // Additional collision checks can be added here
+    // Check player-enemy collisions
+    const enemies = this.levelManager.getEnemies();
+    const player1Bounds = this.player1.getBounds();
+    const player2Bounds = this.player2.getBounds();
+    
+    enemies.forEach(enemy => {
+      const enemyBounds = enemy.getBounds();
+      if (this.isColliding(player1Bounds, enemyBounds) || 
+          this.isColliding(player2Bounds, enemyBounds)) {
+        this.callbacks.onPlayerDeath();
+      }
+    });
+  }
+  
+  private isColliding(a: any, b: any): boolean {
+    return a.x < b.x + b.width &&
+           a.x + a.width > b.x &&
+           a.y < b.y + b.height &&
+           a.y + a.height > b.y;
   }
 
   private checkVictory() {
     if (this.player1.inGoal && this.player2.inGoal) {
-      this.callbacks.onVictory();
+      if (this.levelManager.getCurrentLevelNumber() === 1) {
+        this.callbacks.onLevelComplete();
+      } else {
+        this.callbacks.onVictory();
+      }
     }
   }
 
@@ -148,7 +176,10 @@ export class GameController {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
     // Render level
-    this.level.render(this.ctx);
+    this.levelManager.getCurrentLevel().render(this.ctx);
+    
+    // Render enemies
+    this.levelManager.renderEnemies(this.ctx);
     
     // Render players
     this.player1.render(this.ctx);
@@ -156,7 +187,29 @@ export class GameController {
   }
 
   restartLevel() {
-    const startPos = this.level.getStartPosition();
+    this.levelManager.restartCurrentLevel();
+    const startPos = this.levelManager.getCurrentLevel().getStartPosition();
+    this.player1.reset(startPos.x - 32, startPos.y);
+    this.player2.reset(startPos.x + 32, startPos.y);
+  }
+
+  nextLevel(): boolean {
+    if (this.levelManager.nextLevel()) {
+      const startPos = this.levelManager.getCurrentLevel().getStartPosition();
+      this.player1.reset(startPos.x - 32, startPos.y);
+      this.player2.reset(startPos.x + 32, startPos.y);
+      return true;
+    }
+    return false;
+  }
+
+  getCurrentLevelNumber(): number {
+    return this.levelManager.getCurrentLevelNumber();
+  }
+
+  resetToLevel1() {
+    this.levelManager.reset();
+    const startPos = this.levelManager.getCurrentLevel().getStartPosition();
     this.player1.reset(startPos.x - 32, startPos.y);
     this.player2.reset(startPos.x + 32, startPos.y);
   }

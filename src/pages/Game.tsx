@@ -39,6 +39,7 @@ const Game = () => {
             <GameCanvas 
               onVictory={handleGameVictory}
               onRestart={handleRestart}
+              onLevelComplete={() => {}} // Level progression handled internally in GameCanvas
             />
           )}
           
