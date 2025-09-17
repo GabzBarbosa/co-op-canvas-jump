@@ -107,6 +107,8 @@ export class GameController {
     
     if (input.jump && player.canJump()) {
       player.jump();
+    } else if (input.doubleJump && player.canPerformDoubleJump()) {
+      player.doubleJump();
     }
     
     // Update physics

@@ -10,6 +10,7 @@ export class Player {
   private jumpsUsed: number = 0;
   private readonly maxJumps = 2;
   private wasGroundedLastFrame: boolean = false;
+  private canDoubleJump: boolean = false;
   
   private readonly maxSpeed = 200;
   private readonly jumpPower = 320;
@@ -55,23 +56,35 @@ export class Player {
   }
 
   jump() {
-    if (this.jumpsUsed < this.maxJumps) {
+    if (this.grounded && this.jumpsUsed === 0) {
       this.velocity.y = -this.jumpPower;
       this.jumpsUsed++;
-      if (this.grounded) {
-        this.grounded = false;
-      }
+      this.grounded = false;
+      this.canDoubleJump = true; // Enable double jump after first jump
+    }
+  }
+
+  doubleJump() {
+    if (this.canDoubleJump && this.jumpsUsed === 1) {
+      this.velocity.y = -this.jumpPower * 0.8; // Slightly weaker second jump
+      this.jumpsUsed++;
+      this.canDoubleJump = false;
     }
   }
 
   canJump(): boolean {
-    return this.jumpsUsed < this.maxJumps;
+    return this.grounded && this.jumpsUsed === 0;
+  }
+
+  canPerformDoubleJump(): boolean {
+    return this.canDoubleJump && this.jumpsUsed === 1;
   }
 
   update(deltaTime: number) {
     // Reset jump count when landing (check at start of frame)
     if (!this.wasGroundedLastFrame && this.grounded) {
       this.jumpsUsed = 0;
+      this.canDoubleJump = false;
     }
     this.wasGroundedLastFrame = this.grounded;
     
@@ -174,6 +187,7 @@ export class Player {
     this.grounded = false;
     this.inGoal = false;
     this.jumpsUsed = 0;
+    this.canDoubleJump = false;
     this.wasGroundedLastFrame = false;
     this.speedBoostTimer = 0;
     this.hasShield = false;

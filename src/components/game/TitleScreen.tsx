@@ -122,7 +122,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
                     <div key={keyIndex}>
                       <kbd className="px-2 py-1 rounded text-white text-xs" style={{ backgroundColor: selectedColors[playerKey] }}>
                         {key}
-                      </kbd> {['Esquerda (Fuga)', 'Direita (Ilusão)', 'Pular (Tentar Voar)'][keyIndex]}
+                      </kbd> {['Esquerda (Fuga)', 'Direita (Ilusão)', 'Pular (2x = Duplo)'][keyIndex]}
                     </div>
                   ))}
                 </div>
