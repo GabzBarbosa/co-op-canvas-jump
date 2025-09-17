@@ -6,7 +6,7 @@ interface GameCanvasProps {
   onVictory: () => void;
   onRestart: () => void;
   onLevelComplete: () => void;
-  gameConfig: { playerCount: number; colors: Record<string, string> };
+  gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number };
 }
 
 export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }: GameCanvasProps) => {

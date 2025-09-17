@@ -9,10 +9,11 @@ const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
   const [gameConfig, setGameConfig] = useState({
     playerCount: 2,
-    colors: {} as Record<string, string>
+    colors: {} as Record<string, string>,
+    startLevel: 1
   });
 
-  const handleStartGame = (config: { playerCount: number; colors: Record<string, string> }) => {
+  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number }) => {
     setGameConfig(config);
     setGameState("playing");
   };

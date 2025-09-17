@@ -30,7 +30,7 @@ export class GameController {
   private readonly targetFPS = 60;
   private readonly frameTime = 1000 / this.targetFPS;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string> }) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; startLevel?: number }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
@@ -39,6 +39,11 @@ export class GameController {
     // Initialize game objects
     this.levelManager = new LevelManager();
     this.inputHandler = new InputHandler(canvas, gameConfig.playerCount);
+    
+    // Set starting level if specified
+    if (gameConfig.startLevel && gameConfig.startLevel > 1) {
+      this.levelManager.setLevel(gameConfig.startLevel);
+    }
     
     // Create players at starting positions
     const startPos = this.levelManager.getCurrentLevel().getStartPosition();

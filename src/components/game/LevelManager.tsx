@@ -44,6 +44,14 @@ export class LevelManager {
     return this.currentLevel;
   }
 
+  setLevel(level: number): void {
+    if (level >= 1 && level <= 4) {
+      this.currentLevel = level;
+      this.setupEnemies();
+      this.setupBoss();
+    }
+  }
+
   nextLevel(): boolean {
     if (this.currentLevel < 4) {
       this.currentLevel++;

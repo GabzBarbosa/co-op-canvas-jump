@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { useState } from "react";
 
 interface TitleScreenProps {
-  onStartGame: (config: { playerCount: number; colors: Record<string, string> }) => void;
+  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number }) => void;
   showVictory?: boolean;
 }
 
@@ -20,6 +20,7 @@ const playerColors = [
 
 export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenProps) => {
   const [playerCount, setPlayerCount] = useState(2);
+  const [startLevel, setStartLevel] = useState(1);
   const [selectedColors, setSelectedColors] = useState({
     player1: "#2ECC71",
     player2: "#3498DB",
@@ -41,7 +42,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         selectedColors[`player${i + 1}` as keyof typeof selectedColors]
       ])
     );
-    onStartGame({ playerCount, colors });
+    onStartGame({ playerCount, colors, startLevel });
   };
 
   const getPlayerControls = (playerIndex: number) => {
@@ -66,6 +67,32 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
       </div>
 
       <Card className="bg-card/90 p-8 mb-8 border-2 border-primary max-w-4xl">
+        {/* Level Selection */}
+        <div className="mb-6 text-center">
+          <h3 className="text-lg font-bold mb-4 text-primary">Escolha Sua Fase do Sofrimento</h3>
+          <div className="flex justify-center gap-2 mb-6">
+            {[
+              { level: 1, name: 'Aquecimento', desc: 'Para iniciantes' },
+              { level: 2, name: 'Adaptativo', desc: 'Fica mais difícil' },
+              { level: 3, name: 'Plataformas', desc: 'Com obstáculos móveis' },
+              { level: 4, name: 'Boss Final', desc: 'O desafio supremo' }
+            ].map(({ level, name, desc }) => (
+              <button
+                key={level}
+                className={`px-3 py-2 rounded border-2 font-bold transition-all text-center ${
+                  startLevel === level 
+                    ? 'bg-primary text-primary-foreground border-primary' 
+                    : 'bg-card border-border hover:border-primary'
+                }`}
+                onClick={() => setStartLevel(level)}
+              >
+                <div className="text-sm">{name}</div>
+                <div className="text-xs opacity-75">{desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Player Count Selection */}
         <div className="mb-6 text-center">
           <h3 className="text-lg font-bold mb-4 text-primary">Quantas Vítimas?</h3>
