@@ -124,7 +124,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
           <div className="text-primary font-bold">
             {currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
           </div>
-          {currentLevel === 2 && (
+          {(currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && (
             <div className="text-game-danger font-bold">
               Assassinos: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
             </div>

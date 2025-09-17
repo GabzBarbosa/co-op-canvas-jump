@@ -78,6 +78,12 @@ export class LevelManager {
   private setupEnemies() {
     this.enemies = [];
     
+    if (this.currentLevel === 1) {
+      // Level 1: Basic enemies for introduction
+      this.enemies.push(new Enemy(300, 320, "horizontal", 280, 450, 60));
+      this.enemies.push(new Enemy(600, 280, "vertical", 200, 350, 50));
+    }
+    
     if (this.currentLevel === 2) {
       const baseSpeed = 80;
       
@@ -100,6 +106,13 @@ export class LevelManager {
         this.enemies.push(new Enemy(100, 180, "horizontal", 80, 300, currentSpeed));
         this.enemies.push(new Enemy(700, 300, "vertical", 250, 400, currentSpeed));
       }
+    }
+    
+    if (this.currentLevel === 3) {
+      // Level 3: Enemies that interact with moving platforms
+      this.enemies.push(new Enemy(250, 300, "horizontal", 200, 400, 70));
+      this.enemies.push(new Enemy(500, 200, "vertical", 180, 320, 65));
+      this.enemies.push(new Enemy(650, 320, "horizontal", 600, 750, 75));
     }
   }
 

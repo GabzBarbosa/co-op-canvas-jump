@@ -218,14 +218,24 @@ export class GameController {
       });
     });
 
-    // Check boss projectile collisions (Level 4)
+    // Check boss collisions (Level 4)
     if (this.levelManager.isBossLevel()) {
       const boss = this.levelManager.getBoss();
-      if (boss) {
-        const projectiles = boss.getProjectiles();
+      if (boss && !boss.isDefeated) {
+        const bossBounds = boss.getBounds();
         
         this.players.forEach(player => {
           const playerBounds = player.getBounds();
+          
+          // Boss body collision - instant death
+          if (this.isColliding(playerBounds, bossBounds)) {
+            if (!player.useShield()) {
+              this.callbacks.onPlayerDeath();
+            }
+          }
+          
+          // Boss projectile collisions
+          const projectiles = boss.getProjectiles();
           projectiles.forEach(projectile => {
             const projectileBounds = projectile.getBounds();
             if (this.isColliding(playerBounds, projectileBounds)) {
