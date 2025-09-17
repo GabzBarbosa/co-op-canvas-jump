@@ -121,10 +121,10 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       {/* HUD */}
       <div className="absolute top-4 left-4 bg-card/90 p-3 rounded border border-border">
         <div className="flex items-center gap-4 text-sm">
-          <div className="text-primary font-bold">Level {currentLevel}</div>
+          <div className="text-primary font-bold">Inferno {currentLevel}</div>
           {currentLevel === 2 && (
             <div className="text-game-danger font-bold">
-              Enemies: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
+              Assassinos: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
             </div>
           )}
           {currentLevel === 3 && gameControllerRef.current && gameConfig.playerCount <= 2 && (
@@ -182,7 +182,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
           size="sm"
           className="bg-card/90"
         >
-          Restart Level
+          Recomeçar Tortura
         </Button>
       </div>
 
@@ -194,7 +194,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
           size="sm"
           className="bg-card/90"
         >
-          Exit to Menu
+          Desistir (Covardia)
         </Button>
       </div>
 
@@ -202,8 +202,8 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       {showDeathOverlay && (
         <div className="absolute inset-0 bg-game-danger/80 flex items-center justify-center z-50">
           <div className="text-center">
-            <h2 className="text-4xl font-bold text-white mb-2">OOPS!</h2>
-            <p className="text-white text-lg">Restarting level...</p>
+            <h2 className="text-4xl font-bold text-white mb-2">QUE SURPRESA!</h2>
+            <p className="text-white text-lg">Preparando sua próxima humilhação...</p>
           </div>
         </div>
       )}
@@ -212,11 +212,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       {showLevelCompleteOverlay && (
         <div className="absolute inset-0 bg-gradient-victory/90 flex items-center justify-center z-50">
           <div className="text-center animate-victory-glow">
-            <h2 className="text-5xl font-bold text-white mb-4">LEVEL {currentLevel} COMPLETE!</h2>
+            <h2 className="text-5xl font-bold text-white mb-4">INFERNO {currentLevel} CONQUISTADO!</h2>
             <p className="text-white text-lg mb-6">
               {gameConfig.playerCount === 1 ? 
-                (currentLevel === 1 ? "Ready for Level 2 with moving enemies?" : "Ready for Level 3 with power-ups and moving platforms?") :
-                (currentLevel === 1 ? "Ready for Level 2 with moving enemies?" : "Ready for Level 3 with power-ups and moving platforms?")
+                (currentLevel === 1 ? "Preparado para o Inferno 2 com inimigos móveis?" : "Pronto para o Inferno 3 com power-ups e plataformas traiçoeiras?") :
+                (currentLevel === 1 ? "Preparados para o Inferno 2 com assassinos móveis?" : "Prontos para o Inferno 3 final com tudo que pode dar errado?")
               }
             </p>
             <div className="flex gap-4 justify-center">
@@ -224,14 +224,14 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
                 onClick={handleContinueToNextLevel}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
               >
-                Continue
+                Continuar Sofrendo
               </Button>
               <Button
                 onClick={handleFullRestart}
                 variant="outline" 
                 className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-3 text-lg"
               >
-                Exit to Menu
+                Fugir Covardemente
               </Button>
             </div>
           </div>
@@ -242,9 +242,9 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       {showVictoryOverlay && (
         <div className="absolute inset-0 bg-gradient-victory/90 flex items-center justify-center z-50">
         <div className="text-center animate-victory-glow">
-          <h2 className="text-6xl font-bold text-white mb-4">GAME COMPLETE!</h2>
+          <h2 className="text-6xl font-bold text-white mb-4">MILAGRE ACONTECEU!</h2>
           <p className="text-white text-xl">
-            {gameConfig.playerCount === 1 ? "Amazing solo run through all three levels!" : "Amazing teamwork through all three levels!"}
+            {gameConfig.playerCount === 1 ? "Incrível! Você conseguiu não desistir nos três infernos!" : "Parabéns! A amizade de vocês sobreviveu aos três infernos!"}
           </p>
         </div>
         </div>

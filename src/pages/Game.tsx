@@ -28,10 +28,10 @@ const Game = () => {
   return (
     <>
       <Helmet>
-        <title>Pixel Pals - Cooperative Platformer</title>
-        <meta name="description" content="A cozy 2-player pixel-art platformer where teamwork is everything. Play together, restart together, win together!" />
-        <meta property="og:title" content="Pixel Pals - Cooperative Platformer" />
-        <meta property="og:description" content="A cozy 2-player pixel-art platformer where teamwork is everything. Play together, restart together, win together!" />
+        <title>Malditos Pixels - Teste de Amizade</title>
+        <meta name="description" content="Um jogo pixel-art onde a cooperação é tudo. Joguem juntos, morram juntos, vençam juntos (se conseguirem)!" />
+        <meta property="og:title" content="Malditos Pixels - Teste de Amizade" />
+        <meta property="og:description" content="Um jogo pixel-art onde a cooperação é tudo. Joguem juntos, morram juntos, vençam juntos (se conseguirem)!" />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-game-bg flex items-center justify-center p-4">

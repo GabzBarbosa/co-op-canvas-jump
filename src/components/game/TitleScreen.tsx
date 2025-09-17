@@ -58,17 +58,17 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     <div className="flex flex-col items-center justify-center min-h-screen text-center pixel-perfect">
       <div className="mb-8">
         <h1 className={`text-6xl font-bold mb-4 ${showVictory ? 'animate-victory-glow text-game-goal' : 'text-primary'}`}>
-          PIXEL PALS
+          MALDITOS PIXELS
         </h1>
         <p className="text-xl text-muted-foreground">
-          {showVictory ? "🎉 Level Complete! Amazing teamwork! 🎉" : "A Cooperative Platformer Adventure"}
+          {showVictory ? "🎉 Parabéns! Vocês conseguiram não morrer! 🎉" : "Um Jogo Onde a Amizade Vai pro Espaço"}
         </p>
       </div>
 
       <Card className="bg-card/90 p-8 mb-8 border-2 border-primary max-w-4xl">
         {/* Player Count Selection */}
         <div className="mb-6 text-center">
-          <h3 className="text-lg font-bold mb-4 text-primary">Number of Players</h3>
+          <h3 className="text-lg font-bold mb-4 text-primary">Quantas Vítimas?</h3>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4].map((count) => (
               <button
@@ -80,7 +80,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
                 }`}
                 onClick={() => setPlayerCount(count)}
               >
-                {count} Player{count > 1 ? 's' : ''}
+                {count} {count === 1 ? 'Corajoso' : count === 2 ? 'Desavisados' : count === 3 ? 'Teimosos' : 'Masoquistas'}
               </button>
             ))}
           </div>
@@ -99,10 +99,10 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
             return (
               <div key={playerKey}>
                 <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors[playerKey] }}>
-                  Player {index + 1}
+                  Vítima {index + 1}
                 </h3>
                 <div className="mb-4">
-                  <p className="text-sm font-medium mb-2">Choose Color:</p>
+                  <p className="text-sm font-medium mb-2">Escolha sua Cor da Derrota:</p>
                   <div className="grid grid-cols-4 gap-2 mb-3">
                     {playerColors.map((color) => (
                       <button
@@ -122,7 +122,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
                     <div key={keyIndex}>
                       <kbd className="px-2 py-1 rounded text-white text-xs" style={{ backgroundColor: selectedColors[playerKey] }}>
                         {key}
-                      </kbd> {controls.labels[keyIndex]}
+                      </kbd> {['Esquerda (Fuga)', 'Direita (Ilusão)', 'Pular (Tentar Voar)'][keyIndex]}
                     </div>
                   ))}
                 </div>
@@ -133,22 +133,22 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
 
         <div className="mt-6 p-4 bg-muted rounded border-l-4 border-accent">
           <h4 className="font-bold text-accent mb-2">
-            {playerCount === 1 ? 'Solo Challenge Rules:' : 'Cooperative Rules:'}
+            {playerCount === 1 ? 'Regras para o Solitário:' : 'Regras da Discórdia:'}
           </h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
             {playerCount === 1 ? (
               <>
-                <li>• Navigate through all levels on your own</li>
-                <li>• Avoid red obstacles or restart the level</li>
-                <li>• Collect power-ups to gain advantages</li>
-                <li>• Master precise jumps and timing</li>
+                <li>• Atravesse todos os níveis sozinho (que corajoso)</li>
+                <li>• Evite obstáculos vermelhos ou recomece (surpresa!)</li>
+                <li>• Colete power-ups para fingir que tem vantagem</li>
+                <li>• Domine pulos precisos (boa sorte com isso)</li>
               </>
             ) : (
               <>
-                <li>• All players must reach the golden goal area to win</li>
-                <li>• If any player touches red obstacles, everyone restarts</li>
-                <li>• Work together - some platforms require teamwork!</li>
-                <li>• Communication is key to success</li>
+                <li>• TODOS devem chegar na área dourada (sem exceções, infeliz)</li>
+                <li>• Se UM tocar nos obstáculos vermelhos, TODOS reiniciam (democracia)</li>
+                <li>• Trabalhem juntos - algumas plataformas exigem colaboração (que novidade!)</li>
+                <li>• Comunicação é fundamental (gritar não conta)</li>
               </>
             )}
           </ul>
@@ -160,11 +160,11 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         size="lg"
         className="text-xl px-8 py-4 bg-primary hover:bg-primary/90 border-2 border-primary-foreground font-bold animate-pixel-bounce"
       >
-        {showVictory ? "Play Again" : "Start Adventure"}
+        {showVictory ? "Sofrer de Novo" : "Começar o Sofrimento"}
       </Button>
 
       <p className="text-xs text-muted-foreground mt-4">
-        Made with ❤️ for cooperative gaming
+        Feito com 💀 para testar amizades
       </p>
     </div>
   );
