@@ -6,10 +6,10 @@ interface GameCanvasProps {
   onVictory: () => void;
   onRestart: () => void;
   onLevelComplete: () => void;
-  playerColors: { player1: string; player2: string };
+  gameConfig: { playerCount: number; colors: Record<string, string> };
 }
 
-export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors }: GameCanvasProps) => {
+export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameControllerRef = useRef<GameController | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
@@ -99,7 +99,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors
       onPlayerDeath: handlePlayerDeath,
       onVictory: handleVictory,
       onLevelComplete: handleLevelComplete,
-    }, playerColors);
+    }, gameConfig);
 
     gameControllerRef.current.start();
 
@@ -107,7 +107,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors
       window.removeEventListener("resize", resizeCanvas);
       gameControllerRef.current?.stop();
     };
-  }, [handlePlayerDeath, handleVictory, handleLevelComplete, playerColors]);
+  }, [handlePlayerDeath, handleVictory, handleLevelComplete, gameConfig]);
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-game-background">
@@ -127,32 +127,50 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors
               Enemies: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
             </div>
           )}
-          {currentLevel === 3 && gameControllerRef.current && (
+          {currentLevel === 3 && gameControllerRef.current && gameConfig.playerCount <= 2 && (
             <div className="text-xs space-y-1">
-              <div>P1: {gameControllerRef.current.player1.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player1.hasShield ? "🛡️SHIELD" : ""}</div>
-              <div>P2: {gameControllerRef.current.player2.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2.hasShield ? "🛡️SHIELD" : ""}</div>
+              <div>P1: {gameControllerRef.current.player1?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player1?.hasShield ? "🛡️SHIELD" : ""}</div>
+              {gameConfig.playerCount > 1 && <div>P2: {gameControllerRef.current.player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
             </div>
           )}
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-game-player1 rounded"></div>
-            <span>Player 1</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-game-player2 rounded"></div>
-            <span>Player 2</span>
+          <div className="flex items-center gap-3">
+            {Array.from({ length: gameConfig.playerCount }, (_, i) => (
+              <div key={i} className="flex items-center gap-1">
+                <div 
+                  className="w-3 h-3 rounded" 
+                  style={{ backgroundColor: gameConfig.colors[`player${i + 1}`] }}
+                ></div>
+                <span className="text-xs">P{i + 1}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Controls hint */}
       <div className="absolute top-4 right-4 bg-card/90 p-3 rounded border border-border text-xs">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="text-game-player1 font-bold">P1:</span> WASD
-          </div>
-          <div>
-            <span className="text-game-player2 font-bold">P2:</span> Arrow Keys
-          </div>
+        <div className={`grid gap-2 ${
+          gameConfig.playerCount === 1 ? 'grid-cols-1' :
+          gameConfig.playerCount === 2 ? 'grid-cols-2' :
+          gameConfig.playerCount === 3 ? 'grid-cols-3' :
+          'grid-cols-2'
+        }`}>
+          {Array.from({ length: gameConfig.playerCount }, (_, i) => {
+            const controls = [
+              { keys: ['A', 'D', 'W'], color: gameConfig.colors[`player${i + 1}`] },
+              { keys: ['←', '→', '↑'], color: gameConfig.colors[`player${i + 1}`] },
+              { keys: ['J', 'L', 'I'], color: gameConfig.colors[`player${i + 1}`] },
+              { keys: ['4', '6', '8'], color: gameConfig.colors[`player${i + 1}`] }
+            ];
+            const playerControls = controls[i] || controls[0];
+            
+            return (
+              <div key={i}>
+                <span className="font-bold" style={{ color: playerControls.color }}>P{i + 1}:</span>
+                <span className="ml-1">{playerControls.keys.join('/')}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -196,7 +214,10 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors
           <div className="text-center animate-victory-glow">
             <h2 className="text-5xl font-bold text-white mb-4">LEVEL {currentLevel} COMPLETE!</h2>
             <p className="text-white text-lg mb-6">
-              {currentLevel === 1 ? "Ready for Level 2 with moving enemies?" : "Ready for Level 3 with power-ups and moving platforms?"}
+              {gameConfig.playerCount === 1 ? 
+                (currentLevel === 1 ? "Ready for Level 2 with moving enemies?" : "Ready for Level 3 with power-ups and moving platforms?") :
+                (currentLevel === 1 ? "Ready for Level 2 with moving enemies?" : "Ready for Level 3 with power-ups and moving platforms?")
+              }
             </p>
             <div className="flex gap-4 justify-center">
               <Button
@@ -222,7 +243,9 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors
         <div className="absolute inset-0 bg-gradient-victory/90 flex items-center justify-center z-50">
         <div className="text-center animate-victory-glow">
           <h2 className="text-6xl font-bold text-white mb-4">GAME COMPLETE!</h2>
-          <p className="text-white text-xl">Amazing teamwork through all three levels!</p>
+          <p className="text-white text-xl">
+            {gameConfig.playerCount === 1 ? "Amazing solo run through all three levels!" : "Amazing teamwork through all three levels!"}
+          </p>
         </div>
         </div>
       )}

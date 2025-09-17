@@ -15,29 +15,37 @@ export class GameController {
   private ctx: CanvasRenderingContext2D;
   private callbacks: GameCallbacks;
   
-  public player1: Player;
-  public player2: Player;
+  public players: Player[] = [];
+  // Keep legacy references for backward compatibility
+  public get player1() { return this.players[0]; }
+  public get player2() { return this.players[1]; }
+  
   private levelManager: LevelManager;
   private inputHandler: InputHandler;
+  private playerCount: number;
   
   private gameLoop: number | null = null;
   private lastTime = 0;
   private readonly targetFPS = 60;
   private readonly frameTime = 1000 / this.targetFPS;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, playerColors: { player1: string; player2: string }) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string> }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
+    this.playerCount = gameConfig.playerCount;
 
     // Initialize game objects
     this.levelManager = new LevelManager();
-    this.inputHandler = new InputHandler(canvas);
+    this.inputHandler = new InputHandler(canvas, gameConfig.playerCount);
     
     // Create players at starting positions
     const startPos = this.levelManager.getCurrentLevel().getStartPosition();
-    this.player1 = new Player(startPos.x - 32, startPos.y, playerColors.player1, "player1");
-    this.player2 = new Player(startPos.x + 32, startPos.y, playerColors.player2, "player2");
+    for (let i = 0; i < gameConfig.playerCount; i++) {
+      const offset = (i - (gameConfig.playerCount - 1) / 2) * 64; // Spread players out
+      const color = gameConfig.colors[`player${i + 1}`] || `hsl(${i * 60}, 70%, 50%)`;
+      this.players.push(new Player(startPos.x + offset, startPos.y, color, `player${i + 1}`));
+    }
   }
 
   start() {
@@ -61,8 +69,10 @@ export class GameController {
       const dt = deltaTime / 1000; // Convert to seconds
       
       // Update players
-      this.updatePlayer(this.player1, this.inputHandler.player1Input, dt);
-      this.updatePlayer(this.player2, this.inputHandler.player2Input, dt);
+      this.players.forEach((player, index) => {
+        const input = this.inputHandler.getPlayerInput(index);
+        this.updatePlayer(player, input, dt);
+      });
       
       // Update level (enemies, moving platforms, power-ups)
       this.levelManager.update(dt);
@@ -154,21 +164,17 @@ export class GameController {
   private checkCollisions() {
     // Check player-enemy collisions
     const enemies = this.levelManager.getEnemies();
-    const player1Bounds = this.player1.getBounds();
-    const player2Bounds = this.player2.getBounds();
     
-    enemies.forEach(enemy => {
-      const enemyBounds = enemy.getBounds();
-      if (this.isColliding(player1Bounds, enemyBounds)) {
-        if (!this.player1.useShield()) {
-          this.callbacks.onPlayerDeath();
+    this.players.forEach(player => {
+      const playerBounds = player.getBounds();
+      enemies.forEach(enemy => {
+        const enemyBounds = enemy.getBounds();
+        if (this.isColliding(playerBounds, enemyBounds)) {
+          if (!player.useShield()) {
+            this.callbacks.onPlayerDeath();
+          }
         }
-      }
-      if (this.isColliding(player2Bounds, enemyBounds)) {
-        if (!this.player2.useShield()) {
-          this.callbacks.onPlayerDeath();
-        }
-      }
+      });
     });
   }
   
@@ -177,20 +183,17 @@ export class GameController {
     if (!currentLevel.getPowerUps) return;
     
     const powerUps = currentLevel.getPowerUps();
-    const player1Bounds = this.player1.getBounds();
-    const player2Bounds = this.player2.getBounds();
     
-    powerUps.forEach(powerUp => {
-      const powerUpBounds = powerUp.getBounds();
-      if (this.isColliding(player1Bounds, powerUpBounds)) {
-        if (powerUp.collect()) {
-          this.player1.applyPowerUp(powerUp.type);
+    this.players.forEach(player => {
+      const playerBounds = player.getBounds();
+      powerUps.forEach(powerUp => {
+        const powerUpBounds = powerUp.getBounds();
+        if (this.isColliding(playerBounds, powerUpBounds)) {
+          if (powerUp.collect()) {
+            player.applyPowerUp(powerUp.type);
+          }
         }
-      } else if (this.isColliding(player2Bounds, powerUpBounds)) {
-        if (powerUp.collect()) {
-          this.player2.applyPowerUp(powerUp.type);
-        }
-      }
+      });
     });
   }
   
@@ -202,12 +205,26 @@ export class GameController {
   }
 
   private checkVictory() {
-    if (this.player1.inGoal && this.player2.inGoal) {
-      const currentLevel = this.levelManager.getCurrentLevelNumber();
-      if (currentLevel === 1 || currentLevel === 2) {
-        this.callbacks.onLevelComplete();
-      } else {
-        this.callbacks.onVictory();
+    // For single player, only check player 1
+    if (this.playerCount === 1) {
+      if (this.players[0]?.inGoal) {
+        const currentLevel = this.levelManager.getCurrentLevelNumber();
+        if (currentLevel === 1 || currentLevel === 2) {
+          this.callbacks.onLevelComplete();
+        } else {
+          this.callbacks.onVictory();
+        }
+      }
+    } else {
+      // For multiplayer, all players must be in goal
+      const allInGoal = this.players.every(player => player.inGoal);
+      if (allInGoal) {
+        const currentLevel = this.levelManager.getCurrentLevelNumber();
+        if (currentLevel === 1 || currentLevel === 2) {
+          this.callbacks.onLevelComplete();
+        } else {
+          this.callbacks.onVictory();
+        }
       }
     }
   }
@@ -224,22 +241,25 @@ export class GameController {
     this.levelManager.renderEnemies(this.ctx);
     
     // Render players
-    this.player1.render(this.ctx);
-    this.player2.render(this.ctx);
+    this.players.forEach(player => player.render(this.ctx));
   }
 
   restartLevel() {
     this.levelManager.restartCurrentLevel();
     const startPos = this.levelManager.getCurrentLevel().getStartPosition();
-    this.player1.reset(startPos.x - 32, startPos.y);
-    this.player2.reset(startPos.x + 32, startPos.y);
+    this.players.forEach((player, index) => {
+      const offset = (index - (this.players.length - 1) / 2) * 64;
+      player.reset(startPos.x + offset, startPos.y);
+    });
   }
 
   nextLevel(): boolean {
     if (this.levelManager.nextLevel()) {
       const startPos = this.levelManager.getCurrentLevel().getStartPosition();
-      this.player1.reset(startPos.x - 32, startPos.y);
-      this.player2.reset(startPos.x + 32, startPos.y);
+      this.players.forEach((player, index) => {
+        const offset = (index - (this.players.length - 1) / 2) * 64;
+        player.reset(startPos.x + offset, startPos.y);
+      });
       return true;
     }
     return false;
@@ -256,7 +276,9 @@ export class GameController {
   resetToLevel1() {
     this.levelManager.reset();
     const startPos = this.levelManager.getCurrentLevel().getStartPosition();
-    this.player1.reset(startPos.x - 32, startPos.y);
-    this.player2.reset(startPos.x + 32, startPos.y);
+    this.players.forEach((player, index) => {
+      const offset = (index - (this.players.length - 1) / 2) * 64;
+      player.reset(startPos.x + offset, startPos.y);
+    });
   }
 }

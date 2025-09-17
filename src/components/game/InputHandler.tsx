@@ -5,15 +5,32 @@ interface PlayerInput {
 }
 
 export class InputHandler {
-  public player1Input: PlayerInput = { left: false, right: false, jump: false };
-  public player2Input: PlayerInput = { left: false, right: false, jump: false };
+  private playerInputs: PlayerInput[] = [];
+  private playerCount: number;
   
   private keysPressed: Set<string> = new Set();
   private canvas: HTMLCanvasElement;
+  private handleKeyDown!: (event: KeyboardEvent) => void;
+  private handleKeyUp!: (event: KeyboardEvent) => void;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, playerCount: number = 2) {
     this.canvas = canvas;
+    this.playerCount = playerCount;
+    
+    // Initialize input states for all players
+    for (let i = 0; i < playerCount; i++) {
+      this.playerInputs.push({ left: false, right: false, jump: false });
+    }
+    
     this.setupEventListeners();
+  }
+
+  // Legacy getters for backward compatibility
+  get player1Input() { return this.playerInputs[0] || { left: false, right: false, jump: false }; }
+  get player2Input() { return this.playerInputs[1] || { left: false, right: false, jump: false }; }
+
+  getPlayerInput(index: number) {
+    return this.playerInputs[index] || { left: false, right: false, jump: false };
   }
 
   private setupEventListeners() {
@@ -45,19 +62,27 @@ export class InputHandler {
     this.handleKeyUp = handleKeyUp;
   }
 
-  private handleKeyDown!: (event: KeyboardEvent) => void;
-  private handleKeyUp!: (event: KeyboardEvent) => void;
-
   private updateInputStates() {
-    // Player 1 controls (WASD)
-    this.player1Input.left = this.keysPressed.has('KeyA');
-    this.player1Input.right = this.keysPressed.has('KeyD');
-    this.player1Input.jump = this.keysPressed.has('KeyW');
+    // Player controls mapping
+    const controlMaps = [
+      // Player 1: WASD
+      { left: 'KeyA', right: 'KeyD', jump: 'KeyW' },
+      // Player 2: Arrow keys
+      { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' },
+      // Player 3: JIL
+      { left: 'KeyJ', right: 'KeyL', jump: 'KeyI' },
+      // Player 4: Numpad
+      { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8' }
+    ];
 
-    // Player 2 controls (Arrow keys)
-    this.player2Input.left = this.keysPressed.has('ArrowLeft');
-    this.player2Input.right = this.keysPressed.has('ArrowRight');
-    this.player2Input.jump = this.keysPressed.has('ArrowUp');
+    for (let i = 0; i < this.playerCount; i++) {
+      const controls = controlMaps[i] || controlMaps[0]; // Fallback to first control scheme
+      this.playerInputs[i] = {
+        left: this.keysPressed.has(controls.left),
+        right: this.keysPressed.has(controls.right),
+        jump: this.keysPressed.has(controls.jump)
+      };
+    }
   }
 
   cleanup() {

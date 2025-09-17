@@ -7,13 +7,13 @@ type GameState = "title" | "playing" | "victory";
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
-  const [playerColors, setPlayerColors] = useState({
-    player1: "#2ECC71",
-    player2: "#3498DB"
+  const [gameConfig, setGameConfig] = useState({
+    playerCount: 2,
+    colors: {} as Record<string, string>
   });
 
-  const handleStartGame = (colors: { player1: string; player2: string }) => {
-    setPlayerColors(colors);
+  const handleStartGame = (config: { playerCount: number; colors: Record<string, string> }) => {
+    setGameConfig(config);
     setGameState("playing");
   };
 
@@ -45,7 +45,7 @@ const Game = () => {
               onVictory={handleGameVictory}
               onRestart={handleRestart}
               onLevelComplete={() => {}} // Level progression handled internally in GameCanvas
-              playerColors={playerColors}
+              gameConfig={gameConfig}
             />
           )}
           
