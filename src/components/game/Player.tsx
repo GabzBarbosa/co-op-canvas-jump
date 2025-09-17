@@ -13,7 +13,7 @@ export class Player {
   private canDoubleJump: boolean = false;
   
   private readonly maxSpeed = 200;
-  private readonly jumpPower = 320;
+  private readonly jumpPower = 640;
   private readonly acceleration = 800;
   private readonly friction = 600;
   private readonly gravity = 1200;
