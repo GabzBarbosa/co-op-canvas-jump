@@ -7,9 +7,12 @@ export class Player {
   id: string;
   grounded: boolean = false;
   inGoal: boolean = false;
+  private jumpsUsed: number = 0;
+  private readonly maxJumps = 2;
+  private wasGroundedLastFrame: boolean = false;
   
   private readonly maxSpeed = 200;
-  private readonly jumpPower = 400;
+  private readonly jumpPower = 320;
   private readonly acceleration = 800;
   private readonly friction = 600;
   private readonly gravity = 1200;
@@ -52,17 +55,26 @@ export class Player {
   }
 
   jump() {
-    if (this.grounded) {
+    if (this.jumpsUsed < this.maxJumps) {
       this.velocity.y = -this.jumpPower;
-      this.grounded = false;
+      this.jumpsUsed++;
+      if (this.grounded) {
+        this.grounded = false;
+      }
     }
   }
 
   canJump(): boolean {
-    return this.grounded;
+    return this.jumpsUsed < this.maxJumps;
   }
 
   update(deltaTime: number) {
+    // Reset jump count when landing (check at start of frame)
+    if (!this.wasGroundedLastFrame && this.grounded) {
+      this.jumpsUsed = 0;
+    }
+    this.wasGroundedLastFrame = this.grounded;
+    
     // Update power-up effects
     if (this.speedBoostTimer > 0) {
       this.speedBoostTimer -= deltaTime;
@@ -161,6 +173,8 @@ export class Player {
     this.velocity.y = 0;
     this.grounded = false;
     this.inGoal = false;
+    this.jumpsUsed = 0;
+    this.wasGroundedLastFrame = false;
     this.speedBoostTimer = 0;
     this.hasShield = false;
     this.speedMultiplier = 1.0;
