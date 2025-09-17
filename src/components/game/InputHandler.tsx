@@ -59,7 +59,7 @@ export class InputHandler {
         if (event.code === controls.jump) {
           const timeSinceLastJump = currentTime - this.lastJumpTimes[i];
           
-          if (timeSinceLastJump < 300) { // 300ms window for double tap
+          if (timeSinceLastJump < 500) { // 500ms window for double tap
             this.jumpPressCount[i]++;
           } else {
             this.jumpPressCount[i] = 1;
@@ -72,7 +72,7 @@ export class InputHandler {
             if (this.jumpPressCount[i] > 0) {
               this.jumpPressCount[i] = 0;
             }
-          }, 400);
+          }, 600);
           
           break;
         }
