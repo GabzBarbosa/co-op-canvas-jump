@@ -25,7 +25,7 @@ export class GameController {
   private readonly targetFPS = 60;
   private readonly frameTime = 1000 / this.targetFPS;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, playerColors: { player1: string; player2: string }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
@@ -36,8 +36,8 @@ export class GameController {
     
     // Create players at starting positions
     const startPos = this.levelManager.getCurrentLevel().getStartPosition();
-    this.player1 = new Player(startPos.x - 32, startPos.y, "#2ECC71", "player1"); // Green
-    this.player2 = new Player(startPos.x + 32, startPos.y, "#3498DB", "player2"); // Blue
+    this.player1 = new Player(startPos.x - 32, startPos.y, playerColors.player1, "player1");
+    this.player2 = new Player(startPos.x + 32, startPos.y, playerColors.player2, "player2");
   }
 
   start() {

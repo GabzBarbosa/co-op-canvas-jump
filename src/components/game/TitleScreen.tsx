@@ -1,12 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useState } from "react";
 
 interface TitleScreenProps {
-  onStartGame: () => void;
+  onStartGame: (colors: { player1: string; player2: string }) => void;
   showVictory?: boolean;
 }
 
+const playerColors = [
+  { name: "Green", value: "#2ECC71" },
+  { name: "Blue", value: "#3498DB" },
+  { name: "Red", value: "#E74C3C" },
+  { name: "Purple", value: "#9B59B6" },
+  { name: "Orange", value: "#F39C12" },
+  { name: "Pink", value: "#E91E63" },
+  { name: "Cyan", value: "#1ABC9C" },
+  { name: "Yellow", value: "#F1C40F" },
+];
+
 export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenProps) => {
+  const [selectedColors, setSelectedColors] = useState({
+    player1: "#2ECC71",
+    player2: "#3498DB"
+  });
+
+  const handleColorSelect = (player: "player1" | "player2", color: string) => {
+    setSelectedColors(prev => ({
+      ...prev,
+      [player]: color
+    }));
+  };
+
+  const handleStartGame = () => {
+    onStartGame(selectedColors);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center pixel-perfect">
       <div className="mb-8">
@@ -21,20 +49,52 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
       <Card className="bg-card/90 p-8 mb-8 border-2 border-primary max-w-2xl">
         <div className="grid md:grid-cols-2 gap-6 text-left">
           <div>
-            <h3 className="text-lg font-bold text-game-player1 mb-2">Player 1 (Green)</h3>
+            <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors.player1 }}>Player 1</h3>
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2">Choose Color:</p>
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {playerColors.map((color) => (
+                  <button
+                    key={`p1-${color.value}`}
+                    className={`w-8 h-8 rounded border-2 hover:scale-110 transition-transform ${
+                      selectedColors.player1 === color.value ? 'border-white border-4' : 'border-gray-400'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    onClick={() => handleColorSelect("player1", color.value)}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
             <div className="space-y-1 text-sm">
-              <div><kbd className="bg-game-player1 text-background px-2 py-1 rounded">A</kbd> Move Left</div>
-              <div><kbd className="bg-game-player1 text-background px-2 py-1 rounded">D</kbd> Move Right</div>
-              <div><kbd className="bg-game-player1 text-background px-2 py-1 rounded">W</kbd> Jump</div>
+              <div><kbd className="px-2 py-1 rounded text-white" style={{ backgroundColor: selectedColors.player1 }}>A</kbd> Move Left</div>
+              <div><kbd className="px-2 py-1 rounded text-white" style={{ backgroundColor: selectedColors.player1 }}>D</kbd> Move Right</div>
+              <div><kbd className="px-2 py-1 rounded text-white" style={{ backgroundColor: selectedColors.player1 }}>W</kbd> Jump</div>
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-bold text-game-player2 mb-2">Player 2 (Blue)</h3>
+            <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors.player2 }}>Player 2</h3>
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2">Choose Color:</p>
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {playerColors.map((color) => (
+                  <button
+                    key={`p2-${color.value}`}
+                    className={`w-8 h-8 rounded border-2 hover:scale-110 transition-transform ${
+                      selectedColors.player2 === color.value ? 'border-white border-4' : 'border-gray-400'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    onClick={() => handleColorSelect("player2", color.value)}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
             <div className="space-y-1 text-sm">
-              <div><kbd className="bg-game-player2 text-background px-2 py-1 rounded">←</kbd> Move Left</div>
-              <div><kbd className="bg-game-player2 text-background px-2 py-1 rounded">→</kbd> Move Right</div>
-              <div><kbd className="bg-game-player2 text-background px-2 py-1 rounded">↑</kbd> Jump</div>
+              <div><kbd className="px-2 py-1 rounded text-white" style={{ backgroundColor: selectedColors.player2 }}>←</kbd> Move Left</div>
+              <div><kbd className="px-2 py-1 rounded text-white" style={{ backgroundColor: selectedColors.player2 }}>→</kbd> Move Right</div>
+              <div><kbd className="px-2 py-1 rounded text-white" style={{ backgroundColor: selectedColors.player2 }}>↑</kbd> Jump</div>
             </div>
           </div>
         </div>
@@ -51,7 +111,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
       </Card>
 
       <Button 
-        onClick={onStartGame}
+        onClick={handleStartGame}
         size="lg"
         className="text-xl px-8 py-4 bg-primary hover:bg-primary/90 border-2 border-primary-foreground font-bold animate-pixel-bounce"
       >

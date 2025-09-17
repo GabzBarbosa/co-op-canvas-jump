@@ -6,9 +6,10 @@ interface GameCanvasProps {
   onVictory: () => void;
   onRestart: () => void;
   onLevelComplete: () => void;
+  playerColors: { player1: string; player2: string };
 }
 
-export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvasProps) => {
+export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, playerColors }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameControllerRef = useRef<GameController | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
@@ -98,7 +99,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
       onPlayerDeath: handlePlayerDeath,
       onVictory: handleVictory,
       onLevelComplete: handleLevelComplete,
-    });
+    }, playerColors);
 
     gameControllerRef.current.start();
 
@@ -106,7 +107,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
       window.removeEventListener("resize", resizeCanvas);
       gameControllerRef.current?.stop();
     };
-  }, [handlePlayerDeath, handleVictory, handleLevelComplete]);
+  }, [handlePlayerDeath, handleVictory, handleLevelComplete, playerColors]);
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-game-background">

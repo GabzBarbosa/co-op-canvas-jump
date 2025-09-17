@@ -7,8 +7,13 @@ type GameState = "title" | "playing" | "victory";
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
+  const [playerColors, setPlayerColors] = useState({
+    player1: "#2ECC71",
+    player2: "#3498DB"
+  });
 
-  const handleStartGame = () => {
+  const handleStartGame = (colors: { player1: string; player2: string }) => {
+    setPlayerColors(colors);
     setGameState("playing");
   };
 
@@ -40,6 +45,7 @@ const Game = () => {
               onVictory={handleGameVictory}
               onRestart={handleRestart}
               onLevelComplete={() => {}} // Level progression handled internally in GameCanvas
+              playerColors={playerColors}
             />
           )}
           
