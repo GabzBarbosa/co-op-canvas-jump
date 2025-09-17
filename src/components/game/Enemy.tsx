@@ -10,7 +10,8 @@ export class Enemy {
   public readonly width = 24;
   public readonly height = 24;
   private velocity: { x: number; y: number };
-  private readonly speed = 80;
+  private baseSpeed: number;
+  private currentSpeed: number;
   private readonly minX: number;
   private readonly maxX: number;
   private readonly minY: number;
@@ -23,23 +24,26 @@ export class Enemy {
     y: number, 
     direction: "horizontal" | "vertical",
     minBound: number,
-    maxBound: number
+    maxBound: number,
+    baseSpeed: number = 80
   ) {
     this.position = { x, y };
     this.direction = direction;
+    this.baseSpeed = baseSpeed;
+    this.currentSpeed = baseSpeed;
     
     if (direction === "horizontal") {
       this.minX = minBound;
       this.maxX = maxBound;
       this.minY = y;
       this.maxY = y;
-      this.velocity = { x: this.speed, y: 0 };
+      this.velocity = { x: this.currentSpeed, y: 0 };
     } else {
       this.minX = x;
       this.maxX = x;
       this.minY = minBound;
       this.maxY = maxBound;
-      this.velocity = { x: 0, y: this.speed };
+      this.velocity = { x: 0, y: this.currentSpeed };
     }
   }
 
@@ -62,6 +66,15 @@ export class Enemy {
         this.position.y = Math.max(this.minY, Math.min(this.maxY - this.height, this.position.y));
       }
     }
+  }
+
+  setSpeedMultiplier(multiplier: number) {
+    const newSpeed = this.baseSpeed * multiplier;
+    const speedChange = newSpeed / this.currentSpeed;
+    
+    this.currentSpeed = newSpeed;
+    this.velocity.x *= speedChange;
+    this.velocity.y *= speedChange;
   }
 
   getBounds(): Bounds {

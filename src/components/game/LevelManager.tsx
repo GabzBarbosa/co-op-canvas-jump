@@ -13,6 +13,8 @@ export class LevelManager {
   private level1: Level;
   private level2: Level2;
   private enemies: Enemy[] = [];
+  private difficultyTimer = 0;
+  private difficultyLevel = 1; // 1: easy, 2: medium, 3: hard
 
   constructor() {
     this.level1 = new Level();
@@ -37,25 +39,43 @@ export class LevelManager {
   }
 
   restartCurrentLevel() {
+    this.difficultyTimer = 0;
+    this.difficultyLevel = 1;
     this.setupEnemies();
   }
 
   reset() {
     this.currentLevel = 1;
     this.enemies = [];
+    this.difficultyTimer = 0;
+    this.difficultyLevel = 1;
   }
 
   private setupEnemies() {
     this.enemies = [];
     
     if (this.currentLevel === 2) {
-      // Horizontal enemies
-      this.enemies.push(new Enemy(200, 320, "horizontal", 160, 400));
-      this.enemies.push(new Enemy(500, 256, "horizontal", 450, 650));
+      const baseSpeed = 80;
       
-      // Vertical enemies
-      this.enemies.push(new Enemy(320, 200, "vertical", 150, 350));
-      this.enemies.push(new Enemy(600, 100, "vertical", 80, 280));
+      // Difficulty progression: 2 -> 4 -> 6 enemies
+      // Speed multipliers: 1.0 -> 1.2 -> 1.4
+      const speedMultiplier = 1 + (this.difficultyLevel - 1) * 0.2;
+      const currentSpeed = baseSpeed * speedMultiplier;
+      
+      // Always start with 2 basic enemies
+      this.enemies.push(new Enemy(200, 320, "horizontal", 160, 400, currentSpeed));
+      this.enemies.push(new Enemy(500, 256, "horizontal", 450, 650, currentSpeed));
+      
+      // Add more enemies based on difficulty level
+      if (this.difficultyLevel >= 2) {
+        this.enemies.push(new Enemy(320, 200, "vertical", 150, 350, currentSpeed));
+        this.enemies.push(new Enemy(600, 100, "vertical", 80, 280, currentSpeed));
+      }
+      
+      if (this.difficultyLevel >= 3) {
+        this.enemies.push(new Enemy(100, 180, "horizontal", 80, 300, currentSpeed));
+        this.enemies.push(new Enemy(700, 300, "vertical", 250, 400, currentSpeed));
+      }
     }
   }
 
@@ -64,10 +84,31 @@ export class LevelManager {
   }
 
   updateEnemies(deltaTime: number) {
+    // Only update difficulty in level 2
+    if (this.currentLevel === 2) {
+      this.difficultyTimer += deltaTime;
+      
+      // Increase difficulty every 25 seconds
+      const newDifficultyLevel = Math.min(3, Math.floor(this.difficultyTimer / 25) + 1);
+      
+      if (newDifficultyLevel > this.difficultyLevel) {
+        this.difficultyLevel = newDifficultyLevel;
+        this.setupEnemies(); // Respawn enemies with new difficulty
+      }
+    }
+    
     this.enemies.forEach(enemy => enemy.update(deltaTime));
   }
 
   renderEnemies(ctx: CanvasRenderingContext2D) {
     this.enemies.forEach(enemy => enemy.render(ctx));
+  }
+
+  getDifficultyInfo() {
+    return {
+      level: this.difficultyLevel,
+      timer: this.difficultyTimer,
+      enemyCount: this.enemies.length
+    };
   }
 }

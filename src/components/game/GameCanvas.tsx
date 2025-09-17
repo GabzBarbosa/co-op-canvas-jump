@@ -120,6 +120,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
       <div className="absolute top-4 left-4 bg-card/90 p-3 rounded border border-border">
         <div className="flex items-center gap-4 text-sm">
           <div className="text-primary font-bold">Level {currentLevel}</div>
+          {currentLevel === 2 && (
+            <div className="text-game-danger font-bold">
+              Enemies: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-game-player1 rounded"></div>
             <span>Player 1</span>

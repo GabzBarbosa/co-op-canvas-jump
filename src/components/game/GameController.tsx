@@ -207,6 +207,10 @@ export class GameController {
     return this.levelManager.getCurrentLevelNumber();
   }
 
+  getDifficultyInfo() {
+    return this.levelManager.getDifficultyInfo();
+  }
+
   resetToLevel1() {
     this.levelManager.reset();
     const startPos = this.levelManager.getCurrentLevel().getStartPosition();
