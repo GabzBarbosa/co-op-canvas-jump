@@ -79,9 +79,11 @@ export class LevelManager {
     this.enemies = [];
     
     if (this.currentLevel === 1) {
-      // Level 1: Basic enemies for introduction
+      // Level 1: Basic enemies for introduction + 2 more
       this.enemies.push(new Enemy(300, 320, "horizontal", 280, 450, 60));
       this.enemies.push(new Enemy(600, 280, "vertical", 200, 350, 50));
+      this.enemies.push(new Enemy(150, 280, "horizontal", 100, 250, 55));
+      this.enemies.push(new Enemy(700, 320, "vertical", 280, 380, 65));
     }
     
     if (this.currentLevel === 2) {
@@ -92,9 +94,11 @@ export class LevelManager {
       const speedMultiplier = 1 + (this.difficultyLevel - 1) * 0.2;
       const currentSpeed = baseSpeed * speedMultiplier;
       
-      // Always start with 2 basic enemies
+      // Always start with 4 basic enemies (2 more added)
       this.enemies.push(new Enemy(200, 320, "horizontal", 160, 400, currentSpeed));
       this.enemies.push(new Enemy(500, 256, "horizontal", 450, 650, currentSpeed));
+      this.enemies.push(new Enemy(350, 300, "vertical", 250, 380, currentSpeed));
+      this.enemies.push(new Enemy(120, 280, "horizontal", 80, 300, currentSpeed));
       
       // Add more enemies based on difficulty level
       if (this.difficultyLevel >= 2) {
@@ -109,10 +113,12 @@ export class LevelManager {
     }
     
     if (this.currentLevel === 3) {
-      // Level 3: Enemies that interact with moving platforms
+      // Level 3: Enemies that interact with moving platforms + 2 more
       this.enemies.push(new Enemy(250, 300, "horizontal", 200, 400, 70));
       this.enemies.push(new Enemy(500, 200, "vertical", 180, 320, 65));
       this.enemies.push(new Enemy(650, 320, "horizontal", 600, 750, 75));
+      this.enemies.push(new Enemy(420, 250, "horizontal", 380, 480, 68));
+      this.enemies.push(new Enemy(150, 250, "vertical", 200, 350, 72));
     }
   }
 
