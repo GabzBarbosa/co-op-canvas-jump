@@ -15,8 +15,8 @@ export class GameController {
   private ctx: CanvasRenderingContext2D;
   private callbacks: GameCallbacks;
   
-  private player1: Player;
-  private player2: Player;
+  public player1: Player;
+  public player2: Player;
   private levelManager: LevelManager;
   private inputHandler: InputHandler;
   
@@ -64,11 +64,14 @@ export class GameController {
       this.updatePlayer(this.player1, this.inputHandler.player1Input, dt);
       this.updatePlayer(this.player2, this.inputHandler.player2Input, dt);
       
-      // Update enemies
-      this.levelManager.updateEnemies(dt);
+      // Update level (enemies, moving platforms, power-ups)
+      this.levelManager.update(dt);
       
       // Check collisions
       this.checkCollisions();
+      
+      // Check power-up collisions (Level 3 only)
+      this.checkPowerUpCollisions();
       
       // Check victory condition
       this.checkVictory();
@@ -116,6 +119,16 @@ export class GameController {
       }
     });
     
+    // Handle moving platform collisions (Level 3)
+    collisions.movingPlatforms?.forEach(platform => {
+      if (player.velocity.y > 0 && player.position.y < platform.y + 2) {
+        // Landing on top of moving platform
+        player.position.y = platform.y - player.height;
+        player.velocity.y = 0;
+        player.grounded = true;
+      }
+    });
+    
     // Handle death collisions
     if (collisions.deaths.length > 0) {
       this.callbacks.onPlayerDeath();
@@ -146,9 +159,37 @@ export class GameController {
     
     enemies.forEach(enemy => {
       const enemyBounds = enemy.getBounds();
-      if (this.isColliding(player1Bounds, enemyBounds) || 
-          this.isColliding(player2Bounds, enemyBounds)) {
-        this.callbacks.onPlayerDeath();
+      if (this.isColliding(player1Bounds, enemyBounds)) {
+        if (!this.player1.useShield()) {
+          this.callbacks.onPlayerDeath();
+        }
+      }
+      if (this.isColliding(player2Bounds, enemyBounds)) {
+        if (!this.player2.useShield()) {
+          this.callbacks.onPlayerDeath();
+        }
+      }
+    });
+  }
+  
+  private checkPowerUpCollisions() {
+    const currentLevel = this.levelManager.getCurrentLevel();
+    if (!currentLevel.getPowerUps) return;
+    
+    const powerUps = currentLevel.getPowerUps();
+    const player1Bounds = this.player1.getBounds();
+    const player2Bounds = this.player2.getBounds();
+    
+    powerUps.forEach(powerUp => {
+      const powerUpBounds = powerUp.getBounds();
+      if (this.isColliding(player1Bounds, powerUpBounds)) {
+        if (powerUp.collect()) {
+          this.player1.applyPowerUp(powerUp.type);
+        }
+      } else if (this.isColliding(player2Bounds, powerUpBounds)) {
+        if (powerUp.collect()) {
+          this.player2.applyPowerUp(powerUp.type);
+        }
       }
     });
   }
@@ -162,7 +203,8 @@ export class GameController {
 
   private checkVictory() {
     if (this.player1.inGoal && this.player2.inGoal) {
-      if (this.levelManager.getCurrentLevelNumber() === 1) {
+      const currentLevel = this.levelManager.getCurrentLevelNumber();
+      if (currentLevel === 1 || currentLevel === 2) {
         this.callbacks.onLevelComplete();
       } else {
         this.callbacks.onVictory();

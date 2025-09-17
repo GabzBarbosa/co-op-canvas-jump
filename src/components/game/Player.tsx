@@ -14,6 +14,11 @@ export class Player {
   private readonly friction = 600;
   private readonly gravity = 1200;
   
+  // Power-up effects
+  public speedBoostTimer = 0;
+  public hasShield = false;
+  private speedMultiplier = 1;
+  
   private startX: number;
   private startY: number;
 
@@ -27,11 +32,13 @@ export class Player {
   }
 
   moveLeft() {
-    this.velocity.x = Math.max(this.velocity.x - this.acceleration * (1/60), -this.maxSpeed);
+    const currentMaxSpeed = this.maxSpeed * this.speedMultiplier;
+    this.velocity.x = Math.max(this.velocity.x - this.acceleration * (1/60), -currentMaxSpeed);
   }
 
   moveRight() {
-    this.velocity.x = Math.min(this.velocity.x + this.acceleration * (1/60), this.maxSpeed);
+    const currentMaxSpeed = this.maxSpeed * this.speedMultiplier;
+    this.velocity.x = Math.min(this.velocity.x + this.acceleration * (1/60), currentMaxSpeed);
   }
 
   stopMoving() {
@@ -56,6 +63,14 @@ export class Player {
   }
 
   update(deltaTime: number) {
+    // Update power-up effects
+    if (this.speedBoostTimer > 0) {
+      this.speedBoostTimer -= deltaTime;
+      this.speedMultiplier = 1.2;
+    } else {
+      this.speedMultiplier = 1.0;
+    }
+    
     // Apply gravity
     if (!this.grounded) {
       this.velocity.y += this.gravity * deltaTime;
@@ -123,6 +138,22 @@ export class Player {
     }
   }
 
+  applyPowerUp(type: string) {
+    if (type === "speed") {
+      this.speedBoostTimer = 5; // 5 seconds
+    } else if (type === "shield") {
+      this.hasShield = true;
+    }
+  }
+
+  useShield(): boolean {
+    if (this.hasShield) {
+      this.hasShield = false;
+      return true;
+    }
+    return false;
+  }
+
   reset(x: number, y: number) {
     this.position.x = x;
     this.position.y = y;
@@ -130,5 +161,8 @@ export class Player {
     this.velocity.y = 0;
     this.grounded = false;
     this.inGoal = false;
+    this.speedBoostTimer = 0;
+    this.hasShield = false;
+    this.speedMultiplier = 1.0;
   }
 }

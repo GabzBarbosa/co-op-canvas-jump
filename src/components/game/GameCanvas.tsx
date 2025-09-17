@@ -36,10 +36,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
     setShowLevelCompleteOverlay(true);
   }, []);
 
-  const handleContinueToLevel2 = () => {
+  const handleContinueToNextLevel = () => {
     setShowLevelCompleteOverlay(false);
     if (gameControllerRef.current?.nextLevel()) {
-      setCurrentLevel(2);
+      const newLevel = gameControllerRef.current.getCurrentLevelNumber();
+      setCurrentLevel(newLevel);
     }
   };
 
@@ -125,6 +126,12 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
               Enemies: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
             </div>
           )}
+          {currentLevel === 3 && gameControllerRef.current && (
+            <div className="text-xs space-y-1">
+              <div>P1: {gameControllerRef.current.player1.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player1.hasShield ? "🛡️SHIELD" : ""}</div>
+              <div>P2: {gameControllerRef.current.player2.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2.hasShield ? "🛡️SHIELD" : ""}</div>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-game-player1 rounded"></div>
             <span>Player 1</span>
@@ -186,18 +193,20 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
       {showLevelCompleteOverlay && (
         <div className="absolute inset-0 bg-gradient-victory/90 flex items-center justify-center z-50">
           <div className="text-center animate-victory-glow">
-            <h2 className="text-5xl font-bold text-white mb-4">LEVEL 1 COMPLETE!</h2>
-            <p className="text-white text-lg mb-6">Ready for Level 2?</p>
+            <h2 className="text-5xl font-bold text-white mb-4">LEVEL {currentLevel} COMPLETE!</h2>
+            <p className="text-white text-lg mb-6">
+              {currentLevel === 1 ? "Ready for Level 2 with moving enemies?" : "Ready for Level 3 with power-ups and moving platforms?"}
+            </p>
             <div className="flex gap-4 justify-center">
               <Button
-                onClick={handleContinueToLevel2}
+                onClick={handleContinueToNextLevel}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
               >
                 Continue
               </Button>
               <Button
                 onClick={handleFullRestart}
-                variant="outline"
+                variant="outline" 
                 className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-3 text-lg"
               >
                 Exit to Menu
@@ -210,10 +219,10 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete }: GameCanvas
       {/* Victory Overlay */}
       {showVictoryOverlay && (
         <div className="absolute inset-0 bg-gradient-victory/90 flex items-center justify-center z-50">
-          <div className="text-center animate-victory-glow">
-            <h2 className="text-6xl font-bold text-white mb-4">GAME COMPLETE!</h2>
-            <p className="text-white text-xl">Amazing teamwork through both levels!</p>
-          </div>
+        <div className="text-center animate-victory-glow">
+          <h2 className="text-6xl font-bold text-white mb-4">GAME COMPLETE!</h2>
+          <p className="text-white text-xl">Amazing teamwork through all three levels!</p>
+        </div>
         </div>
       )}
     </div>

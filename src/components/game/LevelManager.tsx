@@ -1,17 +1,23 @@
 import { Level } from "./Level";
 import { Level2 } from "./Level2";
+import { Level3 } from "./Level3";
 import { Enemy } from "./Enemy";
 
 export interface ILevel {
   getStartPosition(): { x: number; y: number };
   getCollisions(bounds: any): any;
   render(ctx: CanvasRenderingContext2D): void;
+  update?(deltaTime: number): void;
+  getPowerUps?(): any[];
+  getMovingPlatforms?(): any[];
+  reset?(): void;
 }
 
 export class LevelManager {
   private currentLevel = 1;
   private level1: Level;
   private level2: Level2;
+  private level3: Level3;
   private enemies: Enemy[] = [];
   private difficultyTimer = 0;
   private difficultyLevel = 1; // 1: easy, 2: medium, 3: hard
@@ -19,10 +25,13 @@ export class LevelManager {
   constructor() {
     this.level1 = new Level();
     this.level2 = new Level2();
+    this.level3 = new Level3();
   }
 
   getCurrentLevel(): ILevel {
-    return this.currentLevel === 1 ? this.level1 : this.level2;
+    if (this.currentLevel === 1) return this.level1;
+    if (this.currentLevel === 2) return this.level2;
+    return this.level3;
   }
 
   getCurrentLevelNumber(): number {
@@ -30,7 +39,7 @@ export class LevelManager {
   }
 
   nextLevel(): boolean {
-    if (this.currentLevel < 2) {
+    if (this.currentLevel < 3) {
       this.currentLevel++;
       this.setupEnemies();
       return true;
@@ -42,6 +51,12 @@ export class LevelManager {
     this.difficultyTimer = 0;
     this.difficultyLevel = 1;
     this.setupEnemies();
+    
+    // Reset level-specific elements
+    const currentLevel = this.getCurrentLevel();
+    if (currentLevel.reset) {
+      currentLevel.reset();
+    }
   }
 
   reset() {
@@ -83,7 +98,13 @@ export class LevelManager {
     return this.enemies;
   }
 
-  updateEnemies(deltaTime: number) {
+  update(deltaTime: number) {
+    // Update level-specific elements
+    const currentLevel = this.getCurrentLevel();
+    if (currentLevel.update) {
+      currentLevel.update(deltaTime);
+    }
+    
     // Only update difficulty in level 2
     if (this.currentLevel === 2) {
       this.difficultyTimer += deltaTime;
