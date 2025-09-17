@@ -151,15 +151,46 @@ export class Level3 implements ILevel {
       }
     });
 
-    // Render goal
-    ctx.fillStyle = "#F39C12";
+    // Render goal - Boss Portal
+    const time = Date.now() / 1000;
     this.goals.forEach(goal => {
+      // Portal base
+      ctx.fillStyle = "#8E44AD"; // Purple base for boss portal
       ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
-      // Portal effect
-      ctx.fillStyle = "#FFF";
-      ctx.fillRect(goal.x + 10, goal.y + 4, goal.width - 20, goal.height - 8);
-      ctx.fillStyle = "#F39C12";
-      ctx.fillRect(goal.x + 15, goal.y + 8, goal.width - 30, goal.height - 16);
+      
+      // Animated portal ring
+      const pulseScale = 0.9 + 0.1 * Math.sin(time * 4);
+      const ringAlpha = 0.7 + 0.3 * Math.sin(time * 3);
+      
+      ctx.globalAlpha = ringAlpha;
+      ctx.fillStyle = "#9B59B6";
+      const ringWidth = goal.width * pulseScale;
+      const ringHeight = goal.height * pulseScale;
+      const offsetX = (goal.width - ringWidth) / 2;
+      const offsetY = (goal.height - ringHeight) / 2;
+      ctx.fillRect(goal.x + offsetX, goal.y + offsetY, ringWidth, ringHeight);
+      
+      // Inner portal swirl
+      ctx.fillStyle = "#2C3E50";
+      const innerSize = ringWidth * 0.6;
+      const innerOffsetX = (goal.width - innerSize) / 2;
+      const innerOffsetY = (goal.height - innerSize) / 2;
+      ctx.fillRect(goal.x + innerOffsetX, goal.y + innerOffsetY, innerSize, innerSize);
+      
+      // Swirling energy effect
+      ctx.fillStyle = "#E74C3C";
+      const energyOffset = Math.sin(time * 6) * 4;
+      ctx.fillRect(goal.x + 20 + energyOffset, goal.y + 6, 8, 8);
+      ctx.fillRect(goal.x + 35 - energyOffset, goal.y + 10, 6, 6);
+      
+      ctx.globalAlpha = 1;
+      
+      // Portal label
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("BOSS", goal.x + goal.width / 2, goal.y - 8);
+      ctx.fillText("PORTAL", goal.x + goal.width / 2, goal.y + goal.height + 18);
     });
 
     // Render moving platforms
