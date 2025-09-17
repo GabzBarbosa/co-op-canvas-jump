@@ -23,6 +23,7 @@ export class GameController {
   private levelManager: LevelManager;
   private inputHandler: InputHandler;
   private playerCount: number;
+  private lastBossDamageTime: number = 0;
   
   private gameLoop: number | null = null;
   private lastTime = 0;
@@ -83,6 +84,11 @@ export class GameController {
       // Check power-up collisions (Level 3 only)
       this.checkPowerUpCollisions();
       
+      // Check boss mechanics (Level 4)
+      if (this.levelManager.isBossLevel()) {
+        this.checkBossMechanics();
+      }
+      
       // Check victory condition
       this.checkVictory();
       
@@ -132,14 +138,47 @@ export class GameController {
     });
     
     // Handle moving platform collisions (Level 3)
-    collisions.movingPlatforms?.forEach(platform => {
-      if (player.velocity.y > 0 && player.position.y < platform.y + 2) {
-        // Landing on top of moving platform
-        player.position.y = platform.y - player.height;
-        player.velocity.y = 0;
-        player.grounded = true;
-      }
-    });
+    if (collisions.movingPlatforms) {
+      collisions.movingPlatforms.forEach(platform => {
+        if (player.velocity.y > 0 && player.position.y < platform.y + 2) {
+          // Landing on top of moving platform
+          player.position.y = platform.y - player.height;
+          player.velocity.y = 0;
+          player.grounded = true;
+        }
+      });
+    }
+    
+    // Handle button collisions (Level 4)
+    if (collisions.buttons && this.levelManager.isBossLevel()) {
+      collisions.buttons.forEach(button => {
+        if (button.buttonId) {
+          this.levelManager.activateButton(button.buttonId);
+        }
+      });
+    }
+    
+    // Deactivate buttons when player leaves them
+    if (this.levelManager.isBossLevel()) {
+      const currentButtons = collisions.buttons || [];
+      const allButtons = ["button1", "button2"];
+      
+      allButtons.forEach(buttonId => {
+        const isOnButton = currentButtons.some(button => button.buttonId === buttonId);
+        if (!isOnButton) {
+          // Check if any other player is on this button
+          const otherPlayersOnButton = this.players.some(otherPlayer => {
+            if (otherPlayer === player) return false;
+            const otherCollisions = this.levelManager.getCurrentLevel().getCollisions(otherPlayer.getBounds());
+            return (otherCollisions.buttons || []).some(button => button.buttonId === buttonId);
+          });
+          
+          if (!otherPlayersOnButton) {
+            this.levelManager.deactivateButton(buttonId);
+          }
+        }
+      });
+    }
     
     // Handle death collisions
     if (collisions.deaths.length > 0) {
@@ -178,6 +217,26 @@ export class GameController {
         }
       });
     });
+
+    // Check boss projectile collisions (Level 4)
+    if (this.levelManager.isBossLevel()) {
+      const boss = this.levelManager.getBoss();
+      if (boss) {
+        const projectiles = boss.getProjectiles();
+        
+        this.players.forEach(player => {
+          const playerBounds = player.getBounds();
+          projectiles.forEach(projectile => {
+            const projectileBounds = projectile.getBounds();
+            if (this.isColliding(playerBounds, projectileBounds)) {
+              if (!player.useShield()) {
+                this.callbacks.onPlayerDeath();
+              }
+            }
+          });
+        });
+      }
+    }
   }
   
   private checkPowerUpCollisions() {
@@ -198,6 +257,21 @@ export class GameController {
       });
     });
   }
+
+  private checkBossMechanics() {
+    const boss = this.levelManager.getBoss();
+    if (!boss || boss.isDefeated) return;
+
+    // Check if both buttons are activated to damage boss
+    if (this.levelManager.areBothButtonsActivated()) {
+      // Deal damage every 0.5 seconds when both buttons are held
+      const currentTime = Date.now();
+      if (!this.lastBossDamageTime || currentTime - this.lastBossDamageTime > 500) {
+        boss.takeDamage(5); // 5 damage per 0.5 seconds = 10 DPS
+        this.lastBossDamageTime = currentTime;
+      }
+    }
+  }
   
   private isColliding(a: any, b: any): boolean {
     return a.x < b.x + b.width &&
@@ -207,11 +281,20 @@ export class GameController {
   }
 
   private checkVictory() {
+    // Level 4 (Boss fight) - check if boss is defeated
+    if (this.levelManager.isBossLevel()) {
+      const boss = this.levelManager.getBoss();
+      if (boss && boss.isDefeated) {
+        this.callbacks.onVictory(); // Final victory for boss defeat
+      }
+      return;
+    }
+
     // For single player, only check player 1
     if (this.playerCount === 1) {
       if (this.players[0]?.inGoal) {
         const currentLevel = this.levelManager.getCurrentLevelNumber();
-        if (currentLevel === 1 || currentLevel === 2) {
+        if (currentLevel === 1 || currentLevel === 2 || currentLevel === 3) {
           this.callbacks.onLevelComplete();
         } else {
           this.callbacks.onVictory();
@@ -222,7 +305,7 @@ export class GameController {
       const allInGoal = this.players.every(player => player.inGoal);
       if (allInGoal) {
         const currentLevel = this.levelManager.getCurrentLevelNumber();
-        if (currentLevel === 1 || currentLevel === 2) {
+        if (currentLevel === 1 || currentLevel === 2 || currentLevel === 3) {
           this.callbacks.onLevelComplete();
         } else {
           this.callbacks.onVictory();
@@ -242,8 +325,56 @@ export class GameController {
     // Render enemies
     this.levelManager.renderEnemies(this.ctx);
     
+    // Render boss (Level 4)
+    this.levelManager.renderBoss(this.ctx);
+    
     // Render players
     this.players.forEach(player => player.render(this.ctx));
+    
+    // Render boss health bar (Level 4)
+    if (this.levelManager.isBossLevel()) {
+      this.renderBossHealthBar();
+    }
+  }
+
+  private renderBossHealthBar() {
+    const boss = this.levelManager.getBoss();
+    if (!boss) return;
+
+    const barWidth = 300;
+    const barHeight = 20;
+    const barX = (this.canvas.width - barWidth) / 2;
+    const barY = 20;
+    
+    // Background
+    this.ctx.fillStyle = "#2C3E50";
+    this.ctx.fillRect(barX - 4, barY - 4, barWidth + 8, barHeight + 8);
+    
+    // Health bar background
+    this.ctx.fillStyle = "#34495E";
+    this.ctx.fillRect(barX, barY, barWidth, barHeight);
+    
+    // Health bar fill
+    const healthPercent = boss.getHealthPercentage() / 100;
+    const fillWidth = barWidth * healthPercent;
+    
+    // Color based on health
+    let healthColor = "#27AE60"; // Green
+    if (healthPercent < 0.7) healthColor = "#F39C12"; // Orange
+    if (healthPercent < 0.4) healthColor = "#E74C3C"; // Red
+    
+    this.ctx.fillStyle = healthColor;
+    this.ctx.fillRect(barX, barY, fillWidth, barHeight);
+    
+    // Boss name and phase
+    this.ctx.fillStyle = "#FFFFFF";
+    this.ctx.font = "16px monospace";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(`BOSS - FASE ${boss.getCurrentPhase()}`, this.canvas.width / 2, barY - 8);
+    
+    // Health text
+    this.ctx.font = "12px monospace";
+    this.ctx.fillText(`${Math.ceil(boss.currentHealth)}/${boss.maxHealth}`, this.canvas.width / 2, barY + 14);
   }
 
   restartLevel() {

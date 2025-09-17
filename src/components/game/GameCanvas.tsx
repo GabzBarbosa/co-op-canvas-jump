@@ -121,7 +121,9 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       {/* HUD */}
       <div className="absolute top-4 left-4 bg-card/90 p-3 rounded border border-border">
         <div className="flex items-center gap-4 text-sm">
-          <div className="text-primary font-bold">Inferno {currentLevel}</div>
+          <div className="text-primary font-bold">
+            {currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
+          </div>
           {currentLevel === 2 && (
             <div className="text-game-danger font-bold">
               Assassinos: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
@@ -131,6 +133,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
             <div className="text-xs space-y-1">
               <div>P1: {gameControllerRef.current.player1?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player1?.hasShield ? "🛡️SHIELD" : ""}</div>
               {gameConfig.playerCount > 1 && <div>P2: {gameControllerRef.current.player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
+            </div>
+          )}
+          {currentLevel === 4 && (
+            <div className="text-xs text-yellow-400 font-bold animate-pulse">
+              Pisar nos botões VERMELHOS JUNTOS para atacar o boss!
             </div>
           )}
           <div className="flex items-center gap-3">
@@ -215,8 +222,12 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
             <h2 className="text-5xl font-bold text-white mb-4">INFERNO {currentLevel} CONQUISTADO!</h2>
             <p className="text-white text-lg mb-6">
               {gameConfig.playerCount === 1 ? 
-                (currentLevel === 1 ? "Preparado para o Inferno 2 com inimigos móveis?" : "Pronto para o Inferno 3 com power-ups e plataformas traiçoeiras?") :
-                (currentLevel === 1 ? "Preparados para o Inferno 2 com assassinos móveis?" : "Prontos para o Inferno 3 final com tudo que pode dar errado?")
+                (currentLevel === 1 ? "Preparado para o Inferno 2 com inimigos móveis?" : 
+                 currentLevel === 2 ? "Pronto para o Inferno 3 com power-ups e plataformas traiçoeiras?" :
+                 "Chegou a hora do BOSS FIGHT final! Vocês precisarão cooperar REALMENTE para vencer!") :
+                (currentLevel === 1 ? "Preparados para o Inferno 2 com assassinos móveis?" : 
+                 currentLevel === 2 ? "Prontos para o Inferno 3 com power-ups e plataformas?" :
+                 "Chegou a hora do BOSS FIGHT final! Ambos devem pisar nos botões ao mesmo tempo!")
               }
             </p>
             <div className="flex gap-4 justify-center">
@@ -224,7 +235,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
                 onClick={handleContinueToNextLevel}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
               >
-                Continuar Sofrendo
+                {currentLevel === 3 ? "ENFRENTAR O BOSS!" : "Continuar Sofrendo"}
               </Button>
               <Button
                 onClick={handleFullRestart}
@@ -242,9 +253,14 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       {showVictoryOverlay && (
         <div className="absolute inset-0 bg-gradient-victory/90 flex items-center justify-center z-50">
         <div className="text-center animate-victory-glow">
-          <h2 className="text-6xl font-bold text-white mb-4">MILAGRE ACONTECEU!</h2>
-          <p className="text-white text-xl">
-            {gameConfig.playerCount === 1 ? "Incrível! Você conseguiu não desistir nos três infernos!" : "Parabéns! A amizade de vocês sobreviveu aos três infernos!"}
+          <h2 className="text-6xl font-bold text-white mb-4">BOSS DERROTADO!</h2>
+          <p className="text-white text-xl mb-4">
+            {gameConfig.playerCount === 1 ? 
+              "Impossível! Você realmente derrotou o boss sozinho nos quatro infernos!" : 
+              "INCRÍVEL! A cooperação perfeita de vocês derrotou o boss final!"}
+          </p>
+          <p className="text-white text-lg">
+            🏆 PARABÉNS, MESTRES DOS MALDITOS PIXELS! 🏆
           </p>
         </div>
         </div>

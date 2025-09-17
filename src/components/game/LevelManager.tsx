@@ -1,7 +1,9 @@
 import { Level } from "./Level";
 import { Level2 } from "./Level2";
 import { Level3 } from "./Level3";
+import { Level4 } from "./Level4";
 import { Enemy } from "./Enemy";
+import { Boss } from "./Boss";
 
 export interface ILevel {
   getStartPosition(): { x: number; y: number };
@@ -18,7 +20,9 @@ export class LevelManager {
   private level1: Level;
   private level2: Level2;
   private level3: Level3;
+  private level4: Level4;
   private enemies: Enemy[] = [];
+  private boss: Boss | null = null;
   private difficultyTimer = 0;
   private difficultyLevel = 1; // 1: easy, 2: medium, 3: hard
 
@@ -26,12 +30,14 @@ export class LevelManager {
     this.level1 = new Level();
     this.level2 = new Level2();
     this.level3 = new Level3();
+    this.level4 = new Level4();
   }
 
   getCurrentLevel(): ILevel {
     if (this.currentLevel === 1) return this.level1;
     if (this.currentLevel === 2) return this.level2;
-    return this.level3;
+    if (this.currentLevel === 3) return this.level3;
+    return this.level4;
   }
 
   getCurrentLevelNumber(): number {
@@ -39,9 +45,10 @@ export class LevelManager {
   }
 
   nextLevel(): boolean {
-    if (this.currentLevel < 3) {
+    if (this.currentLevel < 4) {
       this.currentLevel++;
       this.setupEnemies();
+      this.setupBoss();
       return true;
     }
     return false;
@@ -51,6 +58,7 @@ export class LevelManager {
     this.difficultyTimer = 0;
     this.difficultyLevel = 1;
     this.setupEnemies();
+    this.setupBoss();
     
     // Reset level-specific elements
     const currentLevel = this.getCurrentLevel();
@@ -62,6 +70,7 @@ export class LevelManager {
   reset() {
     this.currentLevel = 1;
     this.enemies = [];
+    this.boss = null;
     this.difficultyTimer = 0;
     this.difficultyLevel = 1;
   }
@@ -94,8 +103,47 @@ export class LevelManager {
     }
   }
 
+  private setupBoss() {
+    if (this.currentLevel === 4) {
+      if (!this.boss || this.boss.isDefeated) {
+        this.boss = new Boss(336, 64); // Center-top of arena
+      } else {
+        this.boss.reset();
+      }
+    } else {
+      this.boss = null;
+    }
+  }
+
   getEnemies(): Enemy[] {
     return this.enemies;
+  }
+
+  getBoss(): Boss | null {
+    return this.boss;
+  }
+
+  isBossLevel(): boolean {
+    return this.currentLevel === 4;
+  }
+
+  activateButton(buttonId: string) {
+    if (this.currentLevel === 4) {
+      this.level4.activateButton(buttonId);
+    }
+  }
+
+  deactivateButton(buttonId: string) {
+    if (this.currentLevel === 4) {
+      this.level4.deactivateButton(buttonId);
+    }
+  }
+
+  areBothButtonsActivated(): boolean {
+    if (this.currentLevel === 4) {
+      return this.level4.areBothButtonsActivated();
+    }
+    return false;
   }
 
   update(deltaTime: number) {
@@ -118,11 +166,22 @@ export class LevelManager {
       }
     }
     
+    // Update boss in level 4
+    if (this.currentLevel === 4 && this.boss) {
+      this.boss.update(deltaTime);
+    }
+    
     this.enemies.forEach(enemy => enemy.update(deltaTime));
   }
 
   renderEnemies(ctx: CanvasRenderingContext2D) {
     this.enemies.forEach(enemy => enemy.render(ctx));
+  }
+
+  renderBoss(ctx: CanvasRenderingContext2D) {
+    if (this.boss && this.currentLevel === 4) {
+      this.boss.render(ctx);
+    }
   }
 
   getDifficultyInfo() {
