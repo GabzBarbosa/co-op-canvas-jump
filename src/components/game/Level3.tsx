@@ -30,10 +30,9 @@ export class Level3 implements ILevel {
       
       // Final challenge area
       { x: 700, y: 300, width: 60, height: 20 },
-      { x: 820, y: 260, width: 80, height: 20 },
       
-      // Goal platform
-      { x: 950, y: 340, width: 80, height: 20 }
+      // Goal platform - moved to visible area
+      { x: 720, y: 260, width: 80, height: 20 }
     ];
 
     // Death zones (spikes and pits)
@@ -47,9 +46,9 @@ export class Level3 implements ILevel {
       { x: 0, y: 400, width: 1024, height: 100 }
     ];
 
-    // Goal area
+    // Goal area - Boss Portal
     this.goals = [
-      { x: 960, y: 320, width: 60, height: 20 }
+      { x: 730, y: 240, width: 60, height: 20 }
     ];
 
     // Moving platforms
@@ -61,7 +60,7 @@ export class Level3 implements ILevel {
       new MovingPlatform(480, 240, 60, 16, "vertical", 240, 320, 50),
       
       // Another horizontal platform for final approach
-      new MovingPlatform(760, 280, 70, 16, "horizontal", 760, 850, 45)
+      new MovingPlatform(600, 280, 70, 16, "horizontal", 600, 680, 45)
     ];
 
     // Power-ups in strategic/risky locations
