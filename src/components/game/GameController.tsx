@@ -377,9 +377,9 @@ export class GameController {
     const fillWidth = barWidth * healthPercent;
     
     // Color based on health
-    let healthColor = "#E74C3C"; // Red
+    let healthColor = "#27AE60"; // Green
     if (healthPercent < 0.7) healthColor = "#F39C12"; // Orange
-    if (healthPercent < 0.4) healthColor = "#8B0000"; // Dark Red
+    if (healthPercent < 0.4) healthColor = "#E74C3C"; // Red
     
     this.ctx.fillStyle = healthColor;
     this.ctx.fillRect(barX, barY, fillWidth, barHeight);

@@ -109,8 +109,8 @@ export class RunnerLevel {
     // Clear background with moving pattern
     const gradient = ctx.createLinearGradient(0, 0, 0, 450);
     gradient.addColorStop(0, "#87CEEB"); // Sky blue
-    gradient.addColorStop(0.7, "#FF6B6B"); // Light red
-    gradient.addColorStop(1, "#DC143C"); // Crimson red
+    gradient.addColorStop(0.7, "#98FB98"); // Light green
+    gradient.addColorStop(1, "#228B22"); // Forest green
     
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 800, 450);

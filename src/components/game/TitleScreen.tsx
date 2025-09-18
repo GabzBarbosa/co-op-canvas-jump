@@ -8,9 +8,9 @@ interface TitleScreenProps {
 }
 
 const playerColors = [
-  { name: "Red", value: "#E74C3C" },
+  { name: "Green", value: "#2ECC71" },
   { name: "Blue", value: "#3498DB" },
-  { name: "Crimson", value: "#DC143C" },
+  { name: "Red", value: "#E74C3C" },
   { name: "Purple", value: "#9B59B6" },
   { name: "Orange", value: "#F39C12" },
   { name: "Pink", value: "#E91E63" },
