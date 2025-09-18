@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GameController } from "./GameController";
+import { RunnerGameController } from "./RunnerGameController";
 import { Button } from "@/components/ui/button";
 
 interface GameCanvasProps {
@@ -40,19 +41,28 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
 
   const handleContinueToNextLevel = () => {
     setShowLevelCompleteOverlay(false);
-    if (gameControllerRef.current?.nextLevel()) {
-      const newLevel = gameControllerRef.current.getCurrentLevelNumber();
+    const controller = gameControllerRef.current;
+    if (controller && 'nextLevel' in controller && controller.nextLevel()) {
+      const newLevel = 'getCurrentLevelNumber' in controller ? controller.getCurrentLevelNumber() : 1;
       setCurrentLevel(newLevel);
     }
   };
 
   const handleQuickRestart = () => {
-    gameControllerRef.current?.restartLevel();
-    setCurrentLevel(gameControllerRef.current?.getCurrentLevelNumber() || 1);
+    const controller = gameControllerRef.current;
+    controller?.restartLevel();
+    if (controller && 'getCurrentLevelNumber' in controller) {
+      setCurrentLevel(controller.getCurrentLevelNumber() || 1);
+    }
   };
 
   const handleFullRestart = () => {
-    gameControllerRef.current?.resetToLevel1();
+    const controller = gameControllerRef.current;
+    if (controller && 'resetToLevel1' in controller) {
+      controller.resetToLevel1();
+    } else {
+      controller?.restartLevel();
+    }
     setCurrentLevel(1);
     onRestart();
   };
@@ -125,15 +135,15 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
           <div className="text-primary font-bold">
             {currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
           </div>
-          {(currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && (
+          {(currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && gameControllerRef.current && 'getDifficultyInfo' in gameControllerRef.current && (
             <div className="text-game-danger font-bold">
-              Assassinos: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
+              Assassinos: {gameControllerRef.current.getDifficultyInfo()?.enemyCount || 0}
             </div>
           )}
-          {currentLevel === 3 && gameControllerRef.current && gameConfig.playerCount <= 2 && (
+          {currentLevel === 3 && gameControllerRef.current && 'player1' in gameControllerRef.current && gameConfig.playerCount <= 2 && (
             <div className="text-xs space-y-1">
               <div>P1: {gameControllerRef.current.player1?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player1?.hasShield ? "🛡️SHIELD" : ""}</div>
-              {gameConfig.playerCount > 1 && <div>P2: {gameControllerRef.current.player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
+              {gameConfig.playerCount > 1 && 'player2' in gameControllerRef.current && <div>P2: {gameControllerRef.current.player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
             </div>
           )}
           {currentLevel === 4 && (

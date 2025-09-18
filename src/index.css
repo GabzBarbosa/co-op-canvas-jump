@@ -16,8 +16,8 @@
     --popover: 220 25% 10%;
     --popover-foreground: 45 100% 95%;
 
-    /* Primary - Vibrant Green (classic platformer) */
-    --primary: 140 80% 45%;
+    /* Primary - Vibrant Red (classic platformer) */
+    --primary: 0 85% 55%;
     --primary-foreground: 220 15% 8%;
 
     /* Secondary - Sky Blue */
@@ -41,7 +41,7 @@
     --ring: 140 80% 45%;
 
     /* Game-specific colors */
-    --game-player1: 140 80% 45%; /* Green */
+    --game-player1: 0 85% 55%; /* Red */
     --game-player2: 200 85% 55%; /* Blue */
     --game-platform: 220 25% 25%;
     --game-background: 220 20% 12%;

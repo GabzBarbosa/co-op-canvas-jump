@@ -182,7 +182,7 @@ export class Level4 {
         case "button":
           // Draw interactive buttons
           const isActivated = tile.activated;
-          ctx.fillStyle = isActivated ? "#27AE60" : "#E74C3C";
+          ctx.fillStyle = isActivated ? "#E74C3C" : "#8B0000";
           ctx.fillRect(tile.x + 4, tile.y + 8, tile.width - 8, tile.height - 16);
           
           // Button glow effect when activated
