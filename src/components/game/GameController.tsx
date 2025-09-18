@@ -24,6 +24,7 @@ export class GameController {
   private inputHandler: InputHandler;
   private playerCount: number;
   private lastBossDamageTime: number = 0;
+  private lastBossTouchDamageTime: number = 0;
   
   private gameLoop: number | null = null;
   private lastTime = 0;
@@ -232,10 +233,12 @@ export class GameController {
         this.players.forEach(player => {
           const playerBounds = player.getBounds();
           
-          // Boss body collision - instant death
+          // Boss body collision - damage boss on touch
           if (this.isColliding(playerBounds, bossBounds)) {
-            if (!player.useShield()) {
-              this.callbacks.onPlayerDeath();
+            const currentTime = Date.now();
+            if (!this.lastBossTouchDamageTime || currentTime - this.lastBossTouchDamageTime > 500) {
+              boss.takeDamage(1); // 1 damage per touch with 0.5s cooldown
+              this.lastBossTouchDamageTime = currentTime;
             }
           }
           
