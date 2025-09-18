@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { TitleScreen } from "@/components/game/TitleScreen";
 import { GameCanvas } from "@/components/game/GameCanvas";
+import { Chapter2Screen } from "@/components/game/Chapter2Screen";
 import { Helmet } from "react-helmet-async";
 
-type GameState = "title" | "playing" | "victory";
+type GameState = "title" | "playing" | "victory" | "chapter2" | "runner";
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
@@ -19,6 +20,19 @@ const Game = () => {
   };
 
   const handleGameVictory = () => {
+    // Check if this is boss victory (should transition to Chapter 2)
+    if (gameConfig.startLevel === 4 || gameState === "playing") {
+      setGameState("chapter2");
+    } else {
+      setGameState("victory");
+    }
+  };
+
+  const handleChapter2Start = () => {
+    setGameState("runner");
+  };
+
+  const handleRunnerVictory = () => {
     setGameState("victory");
   };
 
@@ -45,8 +59,23 @@ const Game = () => {
             <GameCanvas 
               onVictory={handleGameVictory}
               onRestart={handleRestart}
-              onLevelComplete={() => {}} // Level progression handled internally in GameCanvas
+              onLevelComplete={() => {}}
               gameConfig={gameConfig}
+              mode="platformer"
+            />
+          )}
+          
+          {gameState === "chapter2" && (
+            <Chapter2Screen onStart={handleChapter2Start} />
+          )}
+          
+          {gameState === "runner" && (
+            <GameCanvas 
+              onVictory={handleRunnerVictory}
+              onRestart={handleRestart}
+              onLevelComplete={() => {}}
+              gameConfig={gameConfig}
+              mode="runner"
             />
           )}
           

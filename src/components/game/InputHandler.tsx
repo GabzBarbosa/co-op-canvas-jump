@@ -3,6 +3,7 @@ interface PlayerInput {
   right: boolean;
   jump: boolean;
   doubleJump: boolean;
+  down: boolean;
 }
 
 export class InputHandler {
@@ -22,7 +23,7 @@ export class InputHandler {
     
     // Initialize input states for all players
     for (let i = 0; i < playerCount; i++) {
-      this.playerInputs.push({ left: false, right: false, jump: false, doubleJump: false });
+      this.playerInputs.push({ left: false, right: false, jump: false, doubleJump: false, down: false });
       this.lastJumpTimes.push(0);
       this.jumpPressCount.push(0);
     }
@@ -31,11 +32,11 @@ export class InputHandler {
   }
 
   // Legacy getters for backward compatibility
-  get player1Input() { return this.playerInputs[0] || { left: false, right: false, jump: false, doubleJump: false }; }
-  get player2Input() { return this.playerInputs[1] || { left: false, right: false, jump: false, doubleJump: false }; }
+  get player1Input() { return this.playerInputs[0] || { left: false, right: false, jump: false, doubleJump: false, down: false }; }
+  get player2Input() { return this.playerInputs[1] || { left: false, right: false, jump: false, doubleJump: false, down: false }; }
 
   getPlayerInput(index: number) {
-    return this.playerInputs[index] || { left: false, right: false, jump: false, doubleJump: false };
+    return this.playerInputs[index] || { left: false, right: false, jump: false, doubleJump: false, down: false };
   }
 
   private setupEventListeners() {
@@ -48,10 +49,10 @@ export class InputHandler {
       // Check for jump key double press
       const currentTime = Date.now();
       const controlMaps = [
-        { left: 'KeyA', right: 'KeyD', jump: 'KeyW' },
-        { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' },
-        { left: 'KeyJ', right: 'KeyL', jump: 'KeyI' },
-        { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8' }
+        { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
+        { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
+        { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
+        { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad2' }
       ];
       
       for (let i = 0; i < this.playerCount; i++) {
@@ -105,13 +106,13 @@ export class InputHandler {
     // Player controls mapping
     const controlMaps = [
       // Player 1: WASD
-      { left: 'KeyA', right: 'KeyD', jump: 'KeyW' },
+      { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
       // Player 2: Arrow keys
-      { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' },
+      { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
       // Player 3: JIL
-      { left: 'KeyJ', right: 'KeyL', jump: 'KeyI' },
+      { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
       // Player 4: Numpad
-      { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8' }
+      { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad2' }
     ];
 
     for (let i = 0; i < this.playerCount; i++) {
@@ -120,7 +121,8 @@ export class InputHandler {
         left: this.keysPressed.has(controls.left),
         right: this.keysPressed.has(controls.right),
         jump: this.keysPressed.has(controls.jump),
-        doubleJump: this.jumpPressCount[i] >= 2
+        doubleJump: this.jumpPressCount[i] >= 2,
+        down: this.keysPressed.has(controls.down)
       };
     }
   }

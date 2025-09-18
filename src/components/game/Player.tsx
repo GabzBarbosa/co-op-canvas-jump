@@ -23,6 +23,12 @@ export class Player {
   public hasShield = false;
   private speedMultiplier = 1;
   
+  // Runner mode properties
+  private isRunnerMode = false;
+  private isCrouching = false;
+  private originalHeight = 32;
+  private crouchHeight = 16;
+  
   private startX: number;
   private startY: number;
 
@@ -88,6 +94,12 @@ export class Player {
     }
     this.wasGroundedLastFrame = this.grounded;
     
+    // Runner mode: automatic movement
+    if (this.isRunnerMode) {
+      const runSpeed = 150; // Constant run speed
+      this.velocity.x = runSpeed;
+    }
+    
     // Update power-up effects
     if (this.speedBoostTimer > 0) {
       this.speedBoostTimer -= deltaTime;
@@ -108,6 +120,27 @@ export class Player {
     // Update position
     this.position.x += this.velocity.x * deltaTime;
     this.position.y += this.velocity.y * deltaTime;
+  }
+
+  setRunnerMode(enabled: boolean) {
+    this.isRunnerMode = enabled;
+  }
+
+  setCrouching(crouching: boolean) {
+    const wasFraming = this.isCrouching;
+    this.isCrouching = crouching;
+    
+    if (crouching && !wasFraming) {
+      // Start crouching - adjust height and position
+      const heightDiff = this.originalHeight - this.crouchHeight;
+      this.height = this.crouchHeight;
+      this.position.y += heightDiff;
+    } else if (!crouching && wasFraming) {
+      // Stop crouching - restore height and position
+      const heightDiff = this.originalHeight - this.crouchHeight;
+      this.height = this.originalHeight;
+      this.position.y -= heightDiff;
+    }
   }
 
   getBounds() {
@@ -192,5 +225,8 @@ export class Player {
     this.speedBoostTimer = 0;
     this.hasShield = false;
     this.speedMultiplier = 1.0;
+    this.isRunnerMode = false;
+    this.isCrouching = false;
+    this.height = this.originalHeight;
   }
 }

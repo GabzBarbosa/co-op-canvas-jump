@@ -7,11 +7,12 @@ interface GameCanvasProps {
   onRestart: () => void;
   onLevelComplete: () => void;
   gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number };
+  mode?: "platformer" | "runner";
 }
 
 export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameControllerRef = useRef<GameController | null>(null);
+  const gameControllerRef = useRef<GameController | RunnerGameController | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
   const [showVictoryOverlay, setShowVictoryOverlay] = useState(false);
   const [showLevelCompleteOverlay, setShowLevelCompleteOverlay] = useState(false);
