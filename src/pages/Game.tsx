@@ -20,12 +20,8 @@ const Game = () => {
   };
 
   const handleGameVictory = () => {
-    // Check if this is boss victory (should transition to Chapter 2)
-    if (gameConfig.startLevel === 4 || gameState === "playing") {
-      setGameState("chapter2");
-    } else {
-      setGameState("victory");
-    }
+    // This should only transition to Chapter 2 after boss victory (level 4)
+    setGameState("chapter2");
   };
 
   const handleChapter2Start = () => {

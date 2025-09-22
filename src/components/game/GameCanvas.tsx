@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GameController } from "./GameController";
+import { RunnerGameController } from "./RunnerGameController";
 import { Button } from "@/components/ui/button";
 
 interface GameCanvasProps {
@@ -10,7 +11,7 @@ interface GameCanvasProps {
   mode?: "platformer" | "runner";
 }
 
-export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }: GameCanvasProps) => {
+export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, mode = "platformer" }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameControllerRef = useRef<GameController | RunnerGameController | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
@@ -40,20 +41,26 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
 
   const handleContinueToNextLevel = () => {
     setShowLevelCompleteOverlay(false);
-    if (gameControllerRef.current?.nextLevel()) {
-      const newLevel = gameControllerRef.current.getCurrentLevelNumber();
-      setCurrentLevel(newLevel);
+    if (gameControllerRef.current && 'nextLevel' in gameControllerRef.current) {
+      if ((gameControllerRef.current as GameController).nextLevel()) {
+        const newLevel = (gameControllerRef.current as GameController).getCurrentLevelNumber();
+        setCurrentLevel(newLevel);
+      }
     }
   };
 
   const handleQuickRestart = () => {
     gameControllerRef.current?.restartLevel();
-    setCurrentLevel(gameControllerRef.current?.getCurrentLevelNumber() || 1);
+    if (gameControllerRef.current && 'getCurrentLevelNumber' in gameControllerRef.current) {
+      setCurrentLevel((gameControllerRef.current as GameController).getCurrentLevelNumber() || 1);
+    }
   };
 
   const handleFullRestart = () => {
-    gameControllerRef.current?.resetToLevel1();
-    setCurrentLevel(1);
+    if (gameControllerRef.current && 'resetToLevel1' in gameControllerRef.current) {
+      (gameControllerRef.current as GameController).resetToLevel1();
+      setCurrentLevel(1);
+    }
     onRestart();
   };
 
@@ -95,12 +102,19 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
     // Disable image smoothing for pixel-perfect rendering
     ctx.imageSmoothingEnabled = false;
 
-    // Initialize game controller
-    gameControllerRef.current = new GameController(canvas, ctx, {
-      onPlayerDeath: handlePlayerDeath,
-      onVictory: handleVictory,
-      onLevelComplete: handleLevelComplete,
-    }, gameConfig);
+    // Initialize game controller based on mode
+    if (mode === "runner") {
+      gameControllerRef.current = new RunnerGameController(canvas, ctx, {
+        onPlayerDeath: handlePlayerDeath,
+        onVictory: handleVictory,
+      }, gameConfig);
+    } else {
+      gameControllerRef.current = new GameController(canvas, ctx, {
+        onPlayerDeath: handlePlayerDeath,
+        onVictory: handleVictory,
+        onLevelComplete: handleLevelComplete,
+      }, gameConfig);
+    }
 
     gameControllerRef.current.start();
 
@@ -108,7 +122,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       window.removeEventListener("resize", resizeCanvas);
       gameControllerRef.current?.stop();
     };
-  }, [handlePlayerDeath, handleVictory, handleLevelComplete, gameConfig]);
+  }, [handlePlayerDeath, handleVictory, handleLevelComplete, gameConfig, mode]);
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-game-background">
@@ -123,20 +137,26 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
       <div className="absolute top-4 left-4 bg-card/90 p-3 rounded border border-border">
         <div className="flex items-center gap-4 text-sm">
           <div className="text-primary font-bold">
-            {currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
+            {mode === "runner" ? "CHAPTER 2: RUN FOR YOUR LIFE!" : 
+             currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
           </div>
-          {(currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && (
+          {mode === "runner" && gameControllerRef.current && (
+            <div className="text-white font-bold">
+              {(gameControllerRef.current as RunnerGameController).getDistanceProgress?.()?.current || 0}m / {(gameControllerRef.current as RunnerGameController).getDistanceProgress?.()?.target || 500}m
+            </div>
+          )}
+          {mode === "platformer" && (currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && (
             <div className="text-game-danger font-bold">
-              Assassinos: {gameControllerRef.current?.getDifficultyInfo?.()?.enemyCount || 0}
+              Assassinos: {(gameControllerRef.current as GameController)?.getDifficultyInfo?.()?.enemyCount || 0}
             </div>
           )}
-          {currentLevel === 3 && gameControllerRef.current && gameConfig.playerCount <= 2 && (
+          {mode === "platformer" && currentLevel === 3 && gameControllerRef.current && gameConfig.playerCount <= 2 && (
             <div className="text-xs space-y-1">
-              <div>P1: {gameControllerRef.current.player1?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player1?.hasShield ? "🛡️SHIELD" : ""}</div>
-              {gameConfig.playerCount > 1 && <div>P2: {gameControllerRef.current.player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {gameControllerRef.current.player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
+              <div>P1: {(gameControllerRef.current as GameController).player1?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {(gameControllerRef.current as GameController).player1?.hasShield ? "🛡️SHIELD" : ""}</div>
+              {gameConfig.playerCount > 1 && <div>P2: {(gameControllerRef.current as GameController).player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {(gameControllerRef.current as GameController).player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
             </div>
           )}
-          {currentLevel === 4 && (
+          {mode === "platformer" && currentLevel === 4 && (
             <div className="text-xs text-yellow-400 font-bold animate-pulse">
               Pisar nos botões VERMELHOS JUNTOS para atacar o boss!
             </div>
@@ -157,29 +177,37 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig }
 
       {/* Controls hint */}
       <div className="absolute top-4 right-4 bg-card/90 p-3 rounded border border-border text-xs">
-        <div className={`grid gap-2 ${
-          gameConfig.playerCount === 1 ? 'grid-cols-1' :
-          gameConfig.playerCount === 2 ? 'grid-cols-2' :
-          gameConfig.playerCount === 3 ? 'grid-cols-3' :
-          'grid-cols-2'
-        }`}>
-          {Array.from({ length: gameConfig.playerCount }, (_, i) => {
-            const controls = [
-              { keys: ['A', 'D', 'W'], color: gameConfig.colors[`player${i + 1}`] },
-              { keys: ['←', '→', '↑'], color: gameConfig.colors[`player${i + 1}`] },
-              { keys: ['J', 'L', 'I'], color: gameConfig.colors[`player${i + 1}`] },
-              { keys: ['4', '6', '8'], color: gameConfig.colors[`player${i + 1}`] }
-            ];
-            const playerControls = controls[i] || controls[0];
-            
-            return (
-              <div key={i}>
-                <span className="font-bold" style={{ color: playerControls.color }}>P{i + 1}:</span>
-                <span className="ml-1">{playerControls.keys.join('/')}</span>
-              </div>
-            );
-          })}
-        </div>
+        {mode === "runner" ? (
+          <div className="text-center">
+            <div className="text-white font-bold mb-1">CONTROLES:</div>
+            <div>↑ PULAR  ↓ ABAIXAR</div>
+            <div className="text-yellow-400 text-xs mt-1">Todos devem sobreviver!</div>
+          </div>
+        ) : (
+          <div className={`grid gap-2 ${
+            gameConfig.playerCount === 1 ? 'grid-cols-1' :
+            gameConfig.playerCount === 2 ? 'grid-cols-2' :
+            gameConfig.playerCount === 3 ? 'grid-cols-3' :
+            'grid-cols-2'
+          }`}>
+            {Array.from({ length: gameConfig.playerCount }, (_, i) => {
+              const controls = [
+                { keys: ['A', 'D', 'W'], color: gameConfig.colors[`player${i + 1}`] },
+                { keys: ['←', '→', '↑'], color: gameConfig.colors[`player${i + 1}`] },
+                { keys: ['J', 'L', 'I'], color: gameConfig.colors[`player${i + 1}`] },
+                { keys: ['4', '6', '8'], color: gameConfig.colors[`player${i + 1}`] }
+              ];
+              const playerControls = controls[i] || controls[0];
+              
+              return (
+                <div key={i}>
+                  <span className="font-bold" style={{ color: playerControls.color }}>P{i + 1}:</span>
+                  <span className="ml-1">{playerControls.keys.join('/')}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Quick Restart Button */}
