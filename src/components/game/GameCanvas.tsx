@@ -156,6 +156,12 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
               {gameConfig.playerCount > 1 && <div>P2: {(gameControllerRef.current as GameController).player2?.speedBoostTimer > 0 ? "⚡SPEED" : ""} {(gameControllerRef.current as GameController).player2?.hasShield ? "🛡️SHIELD" : ""}</div>}
             </div>
           )}
+          {mode === "platformer" && currentLevel === 2 && (
+            <div className="text-xs text-cyan-400 font-bold animate-pulse mb-2">
+              FASE 2: PULO VARIÁVEL!<br/>
+              Toque rápido = pulo curto | Toque longo = pulo alto | Duplo toque = duplo pulo
+            </div>
+          )}
           {mode === "platformer" && currentLevel === 4 && (
             <div className="text-xs text-yellow-400 font-bold animate-pulse">
               Pisar nos botões VERMELHOS JUNTOS para atacar o boss!
@@ -190,6 +196,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
             gameConfig.playerCount === 3 ? 'grid-cols-3' :
             'grid-cols-2'
           }`}>
+            {currentLevel === 2 && (
+              <div className="col-span-full text-center text-yellow-400 text-xs font-bold mb-2">
+                FASE 2: Toque rápido = pulo curto | Toque longo = pulo alto
+              </div>
+            )}
             {Array.from({ length: gameConfig.playerCount }, (_, i) => {
               const controls = [
                 { keys: ['A', 'D', 'W'], color: gameConfig.colors[`player${i + 1}`] },

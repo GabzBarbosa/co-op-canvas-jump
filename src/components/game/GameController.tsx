@@ -108,6 +108,9 @@ export class GameController {
   };
 
   private updatePlayer(player: Player, input: any, deltaTime: number) {
+    // Set current level for player-specific mechanics
+    player.setCurrentLevel(this.getCurrentLevelNumber());
+    
     // Apply input
     if (input.left && !input.right) {
       player.moveLeft();
@@ -117,10 +120,19 @@ export class GameController {
       player.stopMoving();
     }
     
-    if (input.jump && player.canJump()) {
-      player.jump();
-    } else if (input.doubleJump && player.canPerformDoubleJump()) {
-      player.doubleJump();
+    // Handle jumping based on level and input type
+    if (this.getCurrentLevelNumber() === 2) {
+      // Level 2: Variable jump system
+      if (input.jumpType !== 'none') {
+        player.variableJump(input.jumpType as 'short' | 'long' | 'double');
+      }
+    } else {
+      // Other levels: Standard jump system
+      if (input.jump && player.canJump()) {
+        player.jump();
+      } else if (input.doubleJump && player.canPerformDoubleJump()) {
+        player.doubleJump();
+      }
     }
     
     // Update physics

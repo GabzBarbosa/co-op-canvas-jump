@@ -14,9 +14,14 @@ export class Player {
   
   private readonly maxSpeed = 200;
   private readonly jumpPower = 640;
+  private readonly shortJumpPower = 400; // Level 2: Short jump
+  private readonly longJumpPower = 720;  // Level 2: Long jump
   private readonly acceleration = 800;
   private readonly friction = 600;
   private readonly gravity = 1200;
+  
+  // Current level for special mechanics
+  private currentLevel: number = 1;
   
   // Power-up effects
   public speedBoostTimer = 0;
@@ -67,6 +72,27 @@ export class Player {
       this.jumpsUsed++;
       this.grounded = false;
       this.canDoubleJump = true; // Enable double jump after first jump
+    }
+  }
+
+  // Level 2 specific: Variable jump based on input type
+  variableJump(jumpType: 'short' | 'long' | 'double') {
+    if (this.currentLevel !== 2) {
+      this.jump(); // Fallback to normal jump
+      return;
+    }
+
+    if (jumpType === 'double') {
+      this.doubleJump();
+      return;
+    }
+
+    if (this.grounded && this.jumpsUsed === 0) {
+      const power = jumpType === 'short' ? this.shortJumpPower : this.longJumpPower;
+      this.velocity.y = -power;
+      this.jumpsUsed++;
+      this.grounded = false;
+      this.canDoubleJump = true;
     }
   }
 
@@ -124,6 +150,10 @@ export class Player {
 
   setRunnerMode(enabled: boolean) {
     this.isRunnerMode = enabled;
+  }
+
+  setCurrentLevel(level: number) {
+    this.currentLevel = level;
   }
 
   setCrouching(crouching: boolean) {

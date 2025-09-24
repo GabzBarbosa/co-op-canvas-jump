@@ -4,6 +4,9 @@ interface PlayerInput {
   jump: boolean;
   doubleJump: boolean;
   down: boolean;
+  // Level 2 specific: variable jump system
+  jumpType: 'none' | 'short' | 'long' | 'double';
+  jumpDuration: number;
 }
 
 export class InputHandler {
@@ -13,6 +16,8 @@ export class InputHandler {
   private keysPressed: Set<string> = new Set();
   private lastJumpTimes: number[] = [];
   private jumpPressCount: number[] = [];
+  private jumpStartTimes: number[] = []; // Track when jump key was pressed
+  private jumpEndTimes: number[] = []; // Track when jump key was released
   private canvas: HTMLCanvasElement;
   private handleKeyDown!: (event: KeyboardEvent) => void;
   private handleKeyUp!: (event: KeyboardEvent) => void;
@@ -23,20 +28,38 @@ export class InputHandler {
     
     // Initialize input states for all players
     for (let i = 0; i < playerCount; i++) {
-      this.playerInputs.push({ left: false, right: false, jump: false, doubleJump: false, down: false });
+      this.playerInputs.push({ 
+        left: false, right: false, jump: false, doubleJump: false, down: false,
+        jumpType: 'none', jumpDuration: 0
+      });
       this.lastJumpTimes.push(0);
       this.jumpPressCount.push(0);
+      this.jumpStartTimes.push(0);
+      this.jumpEndTimes.push(0);
     }
     
     this.setupEventListeners();
   }
 
   // Legacy getters for backward compatibility
-  get player1Input() { return this.playerInputs[0] || { left: false, right: false, jump: false, doubleJump: false, down: false }; }
-  get player2Input() { return this.playerInputs[1] || { left: false, right: false, jump: false, doubleJump: false, down: false }; }
+  get player1Input() { 
+    return this.playerInputs[0] || { 
+      left: false, right: false, jump: false, doubleJump: false, down: false,
+      jumpType: 'none', jumpDuration: 0
+    }; 
+  }
+  get player2Input() { 
+    return this.playerInputs[1] || { 
+      left: false, right: false, jump: false, doubleJump: false, down: false,
+      jumpType: 'none', jumpDuration: 0
+    }; 
+  }
 
   getPlayerInput(index: number) {
-    return this.playerInputs[index] || { left: false, right: false, jump: false, doubleJump: false, down: false };
+    return this.playerInputs[index] || { 
+      left: false, right: false, jump: false, doubleJump: false, down: false,
+      jumpType: 'none', jumpDuration: 0
+    };
   }
 
   private setupEventListeners() {
@@ -59,6 +82,9 @@ export class InputHandler {
         const controls = controlMaps[i] || controlMaps[0];
         if (event.code === controls.jump) {
           const timeSinceLastJump = currentTime - this.lastJumpTimes[i];
+          
+          // Track when jump key was pressed for duration calculation
+          this.jumpStartTimes[i] = currentTime;
           
           if (timeSinceLastJump < 300) { // 300ms window for double tap (more responsive)
             this.jumpPressCount[i]++;
@@ -85,6 +111,24 @@ export class InputHandler {
 
     const handleKeyUp = (event: KeyboardEvent) => {
       event.preventDefault();
+      
+      // Track jump key release for duration calculation
+      const currentTime = Date.now();
+      const controlMaps = [
+        { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
+        { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
+        { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
+        { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad2' }
+      ];
+      
+      for (let i = 0; i < this.playerCount; i++) {
+        const controls = controlMaps[i] || controlMaps[0];
+        if (event.code === controls.jump && this.jumpStartTimes[i] > 0) {
+          this.jumpEndTimes[i] = currentTime;
+          break;
+        }
+      }
+      
       this.keysPressed.delete(event.code);
       this.updateInputStates();
     };
@@ -117,12 +161,33 @@ export class InputHandler {
 
     for (let i = 0; i < this.playerCount; i++) {
       const controls = controlMaps[i] || controlMaps[0]; // Fallback to first control scheme
+      
+      // Calculate jump duration and type
+      let jumpType: 'none' | 'short' | 'long' | 'double' = 'none';
+      let jumpDuration = 0;
+      
+      if (this.jumpEndTimes[i] > this.jumpStartTimes[i] && this.jumpStartTimes[i] > 0) {
+        jumpDuration = this.jumpEndTimes[i] - this.jumpStartTimes[i];
+        
+        if (this.jumpPressCount[i] >= 2) {
+          jumpType = 'double';
+        } else if (jumpDuration > 0) {
+          jumpType = jumpDuration < 150 ? 'short' : 'long'; // 150ms threshold
+        }
+        
+        // Reset after processing
+        this.jumpStartTimes[i] = 0;
+        this.jumpEndTimes[i] = 0;
+      }
+      
       this.playerInputs[i] = {
         left: this.keysPressed.has(controls.left),
         right: this.keysPressed.has(controls.right),
         jump: this.keysPressed.has(controls.jump),
         doubleJump: this.jumpPressCount[i] >= 2,
-        down: this.keysPressed.has(controls.down)
+        down: this.keysPressed.has(controls.down),
+        jumpType: jumpType,
+        jumpDuration: jumpDuration
       };
     }
   }
