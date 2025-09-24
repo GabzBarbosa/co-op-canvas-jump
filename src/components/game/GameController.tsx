@@ -123,7 +123,7 @@ export class GameController {
     // Handle jumping based on level and input type
     if (this.getCurrentLevelNumber() === 2) {
       // Level 2: Variable jump system
-      if (input.jumpType !== 'none') {
+      if (input.jumpType && input.jumpType !== 'none') {
         player.variableJump(input.jumpType as 'short' | 'long' | 'double');
       }
     } else {

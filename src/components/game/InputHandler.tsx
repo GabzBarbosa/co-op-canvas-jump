@@ -172,12 +172,18 @@ export class InputHandler {
         if (this.jumpPressCount[i] >= 2) {
           jumpType = 'double';
         } else if (jumpDuration > 0) {
-          jumpType = jumpDuration < 150 ? 'short' : 'long'; // 150ms threshold
+          jumpType = jumpDuration < 120 ? 'short' : 'long'; // 120ms threshold (mais sensível)
         }
         
         // Reset after processing
         this.jumpStartTimes[i] = 0;
         this.jumpEndTimes[i] = 0;
+      } else if (this.keysPressed.has(controls.jump) && this.jumpStartTimes[i] > 0) {
+        // Jump key is still held - calculate current duration
+        jumpDuration = Date.now() - this.jumpStartTimes[i];
+        if (jumpDuration >= 50) { // Minimum hold time to register
+          jumpType = jumpDuration < 120 ? 'short' : 'long';
+        }
       }
       
       this.playerInputs[i] = {

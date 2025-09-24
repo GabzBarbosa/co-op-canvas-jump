@@ -93,6 +93,8 @@ export class Player {
       this.jumpsUsed++;
       this.grounded = false;
       this.canDoubleJump = true;
+      
+      console.log(`Player ${this.id} - Jump Type: ${jumpType}, Power: ${power}`); // Debug log
     }
   }
 
