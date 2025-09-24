@@ -11,12 +11,17 @@ const Game = () => {
   const [gameConfig, setGameConfig] = useState({
     playerCount: 2,
     colors: {} as Record<string, string>,
-    startLevel: 1
+    startLevel: 1,
+    mode: 'platformer' as 'platformer' | 'runner'
   });
 
-  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number }) => {
-    setGameConfig(config);
-    setGameState("playing");
+  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner' }) => {
+    setGameConfig({ ...config, mode: config.mode || 'platformer' });
+    if (config.mode === 'runner') {
+      setGameState("runner");
+    } else {
+      setGameState("playing");
+    }
   };
 
   const handleGameVictory = () => {
