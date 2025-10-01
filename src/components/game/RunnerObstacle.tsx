@@ -28,7 +28,7 @@ export class RunnerObstacle {
         break;
       case "spike":
         this.width = 32;
-        this.height = 40;
+        this.height = 20; // Altura reduzida para permitir agachar
         this.requiresJump = false;
         this.requiresCrouch = true;
         break;
@@ -74,18 +74,18 @@ export class RunnerObstacle {
         break;
         
       case "spike":
-        // Gray spikes pointing up
+        // Gray spikes pointing down from above (player needs to crouch)
         ctx.fillStyle = "#666666";
-        ctx.fillRect(this.position.x, this.position.y + 20, this.width, 20);
+        ctx.fillRect(this.position.x, this.position.y, this.width, 8);
         
-        // Draw spike points
+        // Draw spike points facing down
         ctx.fillStyle = "#888888";
         for (let i = 0; i < 4; i++) {
           const spikeX = this.position.x + (i * 8);
           ctx.beginPath();
-          ctx.moveTo(spikeX, this.position.y + 20);
-          ctx.lineTo(spikeX + 4, this.position.y);
-          ctx.lineTo(spikeX + 8, this.position.y + 20);
+          ctx.moveTo(spikeX, this.position.y + 8);
+          ctx.lineTo(spikeX + 4, this.position.y + 20);
+          ctx.lineTo(spikeX + 8, this.position.y + 8);
           ctx.fill();
         }
         break;
