@@ -32,14 +32,15 @@ export class RunnerGameController {
     this.level = new RunnerLevel();
     this.inputHandler = new InputHandler(canvas, gameConfig.playerCount);
     
-    // Create players at starting positions
+    // Create players at starting positions - centered on screen
+    const centerX = 300; // Fixed position in the middle of the screen
     const startPos = this.level.getStartPosition();
     for (let i = 0; i < gameConfig.playerCount; i++) {
-      const offset = i * 64; // Spread players out horizontally
+      const offset = i * 40; // Spread players out vertically or slightly horizontally
       const color = gameConfig.colors[`player${i + 1}`] || `hsl(${i * 60}, 70%, 50%)`;
-      const player = new Player(startPos.x + offset, startPos.y, color, `player${i + 1}`);
+      const player = new Player(centerX + offset, startPos.y, color, `player${i + 1}`);
       
-      // Set runner mode - players run automatically
+      // Set runner mode - players stay in place, world moves
       player.setRunnerMode(true);
       this.players.push(player);
     }
@@ -133,6 +134,12 @@ export class RunnerGameController {
       player.velocity.y = 0;
       player.grounded = true;
     }
+    
+    // Keep player centered horizontally (no drift)
+    const centerX = 300;
+    if (Math.abs(player.position.x - centerX) > 1) {
+      player.position.x = centerX;
+    }
   }
 
   private checkCollisions() {
@@ -204,10 +211,11 @@ export class RunnerGameController {
 
   restartLevel() {
     this.level.reset();
+    const centerX = 300;
     const startPos = this.level.getStartPosition();
     this.players.forEach((player, index) => {
-      const offset = index * 64;
-      player.reset(startPos.x + offset, startPos.y);
+      const offset = index * 40;
+      player.reset(centerX + offset, startPos.y);
       player.setRunnerMode(true);
     });
   }
