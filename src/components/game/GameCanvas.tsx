@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GameController } from "./GameController";
 import { RunnerGameController } from "./RunnerGameController";
+import { RunnerGameController2 } from "./RunnerGameController2";
 import { Button } from "@/components/ui/button";
 
 interface GameCanvasProps {
@@ -8,12 +9,12 @@ interface GameCanvasProps {
   onRestart: () => void;
   onLevelComplete: () => void;
   gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number };
-  mode?: "platformer" | "runner";
+  mode?: "platformer" | "runner" | "runner2";
 }
 
 export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, mode = "platformer" }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameControllerRef = useRef<GameController | RunnerGameController | null>(null);
+  const gameControllerRef = useRef<GameController | RunnerGameController | RunnerGameController2 | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
   const [showVictoryOverlay, setShowVictoryOverlay] = useState(false);
   const [showLevelCompleteOverlay, setShowLevelCompleteOverlay] = useState(false);
@@ -108,6 +109,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
         onPlayerDeath: handlePlayerDeath,
         onVictory: handleVictory,
       }, gameConfig);
+    } else if (mode === "runner2") {
+      gameControllerRef.current = new RunnerGameController2(canvas, ctx, {
+        onPlayerDeath: handlePlayerDeath,
+        onVictory: handleVictory,
+      }, gameConfig);
     } else {
       gameControllerRef.current = new GameController(canvas, ctx, {
         onPlayerDeath: handlePlayerDeath,
@@ -138,11 +144,18 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
         <div className="flex items-center gap-4 text-sm">
           <div className="text-primary font-bold">
             {mode === "runner" ? "CHAPTER 2: RUN FOR YOUR LIFE!" : 
+             mode === "runner2" ? "CHAPTER 3: MARIO'S WORLD!" :
              currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
           </div>
           {mode === "runner" && gameControllerRef.current && (
             <div className="text-white font-bold">
               {(gameControllerRef.current as RunnerGameController).getDistanceProgress?.()?.current || 0}m / {(gameControllerRef.current as RunnerGameController).getDistanceProgress?.()?.target || 500}m
+            </div>
+          )}
+          {mode === "runner2" && gameControllerRef.current && (
+            <div className="text-white font-bold">
+              {(gameControllerRef.current as RunnerGameController2).getDistanceProgress?.()?.current || 0}m / {(gameControllerRef.current as RunnerGameController2).getDistanceProgress?.()?.target || 800}m
+              <span className="ml-3 text-yellow-500">🪙 {(gameControllerRef.current as RunnerGameController2).getCoinsCollected?.() || 0}</span>
             </div>
           )}
           {mode === "platformer" && (currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && (
@@ -183,7 +196,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
 
       {/* Controls hint */}
       <div className="absolute top-4 right-4 bg-card/90 p-3 rounded border border-border text-xs">
-        {mode === "runner" ? (
+        {(mode === "runner" || mode === "runner2") ? (
           <div className="text-center">
             <div className="text-white font-bold mb-1">CONTROLES:</div>
             <div>↑ PULAR  ↓ ABAIXAR</div>

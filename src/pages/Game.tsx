@@ -2,9 +2,10 @@ import { useState } from "react";
 import { TitleScreen } from "@/components/game/TitleScreen";
 import { GameCanvas } from "@/components/game/GameCanvas";
 import { Chapter2Screen } from "@/components/game/Chapter2Screen";
+import { Chapter3Screen } from "@/components/game/Chapter3Screen";
 import { Helmet } from "react-helmet-async";
 
-type GameState = "title" | "playing" | "victory" | "chapter2" | "runner";
+type GameState = "title" | "playing" | "victory" | "chapter2" | "runner" | "chapter3" | "runner2";
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
@@ -34,6 +35,14 @@ const Game = () => {
   };
 
   const handleRunnerVictory = () => {
+    setGameState("chapter3");
+  };
+
+  const handleChapter3Start = () => {
+    setGameState("runner2");
+  };
+
+  const handleRunner2Victory = () => {
     setGameState("victory");
   };
 
@@ -77,6 +86,20 @@ const Game = () => {
               onLevelComplete={() => {}}
               gameConfig={gameConfig}
               mode="runner"
+            />
+          )}
+
+          {gameState === "chapter3" && (
+            <Chapter3Screen onStart={handleChapter3Start} />
+          )}
+          
+          {gameState === "runner2" && (
+            <GameCanvas 
+              onVictory={handleRunner2Victory}
+              onRestart={handleRestart}
+              onLevelComplete={() => {}}
+              gameConfig={gameConfig}
+              mode="runner2"
             />
           )}
           
