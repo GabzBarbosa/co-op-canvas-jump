@@ -122,10 +122,9 @@ export class Player {
     }
     this.wasGroundedLastFrame = this.grounded;
     
-    // Runner mode: automatic movement
+    // Runner mode: player stays in place, obstacles move
     if (this.isRunnerMode) {
-      const runSpeed = 150; // Constant run speed
-      this.velocity.x = runSpeed;
+      this.velocity.x = 0; // No horizontal movement
     }
     
     // Update power-up effects
