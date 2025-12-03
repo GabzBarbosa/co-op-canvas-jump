@@ -8,7 +8,7 @@ interface GameCanvasProps {
   onVictory: () => void;
   onRestart: () => void;
   onLevelComplete: () => void;
-  gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number };
+  gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number; controls?: Record<string, number> };
   mode?: "platformer" | "runner" | "runner2";
 }
 
@@ -199,7 +199,21 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
         {(mode === "runner" || mode === "runner2") ? (
           <div className="text-center">
             <div className="text-white font-bold mb-1">CONTROLES:</div>
-            <div>↑ PULAR  ↓ ABAIXAR</div>
+            {Array.from({ length: gameConfig.playerCount }, (_, i) => {
+              const controlSchemes = [
+                { name: 'WASD', keys: ['A', 'D', 'W', 'S'] },
+                { name: 'Setas', keys: ['←', '→', '↑', '↓'] },
+                { name: 'IJKL', keys: ['J', 'L', 'I', 'K'] },
+                { name: 'Numpad', keys: ['4', '6', '8', '5'] },
+              ];
+              const controlIndex = gameConfig.controls?.[`player${i + 1}`] ?? i;
+              const scheme = controlSchemes[controlIndex] || controlSchemes[0];
+              return (
+                <div key={i} style={{ color: gameConfig.colors[`player${i + 1}`] }}>
+                  P{i + 1}: {scheme.keys[2]} PULAR / {scheme.keys[3]} ABAIXAR
+                </div>
+              );
+            })}
             <div className="text-yellow-400 text-xs mt-1">Todos devem sobreviver!</div>
           </div>
         ) : (
@@ -215,17 +229,18 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
               </div>
             )}
             {Array.from({ length: gameConfig.playerCount }, (_, i) => {
-              const controls = [
-                { keys: ['A', 'D', 'W'], color: gameConfig.colors[`player${i + 1}`] },
-                { keys: ['←', '→', '↑'], color: gameConfig.colors[`player${i + 1}`] },
-                { keys: ['J', 'L', 'I'], color: gameConfig.colors[`player${i + 1}`] },
-                { keys: ['4', '6', '8'], color: gameConfig.colors[`player${i + 1}`] }
+              const controlSchemes = [
+                { keys: ['A', 'D', 'W'] },
+                { keys: ['←', '→', '↑'] },
+                { keys: ['J', 'L', 'I'] },
+                { keys: ['4', '6', '8'] }
               ];
-              const playerControls = controls[i] || controls[0];
+              const controlIndex = gameConfig.controls?.[`player${i + 1}`] ?? i;
+              const playerControls = controlSchemes[controlIndex] || controlSchemes[0];
               
               return (
                 <div key={i}>
-                  <span className="font-bold" style={{ color: playerControls.color }}>P{i + 1}:</span>
+                  <span className="font-bold" style={{ color: gameConfig.colors[`player${i + 1}`] }}>P{i + 1}:</span>
                   <span className="ml-1">{playerControls.keys.join('/')}</span>
                 </div>
               );

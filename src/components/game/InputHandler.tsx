@@ -9,9 +9,17 @@ interface PlayerInput {
   jumpDuration: number;
 }
 
+const ALL_CONTROL_MAPS = [
+  { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
+  { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
+  { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
+  { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad5' }
+];
+
 export class InputHandler {
   private playerInputs: PlayerInput[] = [];
   private playerCount: number;
+  private playerControlMaps: typeof ALL_CONTROL_MAPS = [];
   
   private keysPressed: Set<string> = new Set();
   private lastJumpTimes: number[] = [];
@@ -22,9 +30,15 @@ export class InputHandler {
   private handleKeyDown!: (event: KeyboardEvent) => void;
   private handleKeyUp!: (event: KeyboardEvent) => void;
 
-  constructor(canvas: HTMLCanvasElement, playerCount: number = 2) {
+  constructor(canvas: HTMLCanvasElement, playerCount: number = 2, controlMappings?: Record<string, number>) {
     this.canvas = canvas;
     this.playerCount = playerCount;
+    
+    // Set up control maps based on provided mappings or defaults
+    for (let i = 0; i < playerCount; i++) {
+      const controlIndex = controlMappings?.[`player${i + 1}`] ?? i;
+      this.playerControlMaps.push(ALL_CONTROL_MAPS[controlIndex] || ALL_CONTROL_MAPS[0]);
+    }
     
     // Initialize input states for all players
     for (let i = 0; i < playerCount; i++) {
@@ -71,15 +85,9 @@ export class InputHandler {
       
       // Check for jump key double press
       const currentTime = Date.now();
-      const controlMaps = [
-        { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
-        { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
-        { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
-        { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad2' }
-      ];
       
       for (let i = 0; i < this.playerCount; i++) {
-        const controls = controlMaps[i] || controlMaps[0];
+        const controls = this.playerControlMaps[i];
         if (event.code === controls.jump) {
           const timeSinceLastJump = currentTime - this.lastJumpTimes[i];
           
@@ -114,15 +122,9 @@ export class InputHandler {
       
       // Track jump key release for duration calculation
       const currentTime = Date.now();
-      const controlMaps = [
-        { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
-        { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
-        { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
-        { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad2' }
-      ];
       
       for (let i = 0; i < this.playerCount; i++) {
-        const controls = controlMaps[i] || controlMaps[0];
+        const controls = this.playerControlMaps[i];
         if (event.code === controls.jump && this.jumpStartTimes[i] > 0) {
           this.jumpEndTimes[i] = currentTime;
           break;
@@ -147,20 +149,8 @@ export class InputHandler {
   }
 
   private updateInputStates() {
-    // Player controls mapping
-    const controlMaps = [
-      // Player 1: WASD
-      { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS' },
-      // Player 2: Arrow keys
-      { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown' },
-      // Player 3: JIL
-      { left: 'KeyJ', right: 'KeyL', jump: 'KeyI', down: 'KeyK' },
-      // Player 4: Numpad
-      { left: 'Numpad4', right: 'Numpad6', jump: 'Numpad8', down: 'Numpad2' }
-    ];
-
     for (let i = 0; i < this.playerCount; i++) {
-      const controls = controlMaps[i] || controlMaps[0]; // Fallback to first control scheme
+      const controls = this.playerControlMaps[i];
       
       // Calculate jump duration and type
       let jumpType: 'none' | 'short' | 'long' | 'double' = 'none';
