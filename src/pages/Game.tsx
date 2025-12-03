@@ -14,11 +14,17 @@ const Game = () => {
     colors: {} as Record<string, string>,
     startLevel: 1,
     mode: 'platformer' as 'platformer' | 'runner',
-    runnerLevel: 1
+    runnerLevel: 1,
+    controls: {} as Record<string, number>
   });
 
-  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number }) => {
-    setGameConfig({ ...config, mode: config.mode || 'platformer', runnerLevel: config.runnerLevel || 1 });
+  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number> }) => {
+    setGameConfig({ 
+      ...config, 
+      mode: config.mode || 'platformer', 
+      runnerLevel: config.runnerLevel || 1,
+      controls: config.controls || {}
+    });
     if (config.mode === 'runner') {
       if (config.runnerLevel === 2) {
         setGameState("runner2");

@@ -3,9 +3,16 @@ import { Card } from "@/components/ui/card";
 import { useState } from "react";
 
 interface TitleScreenProps {
-  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number }) => void;
+  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number> }) => void;
   showVictory?: boolean;
 }
+
+const controlSchemes = [
+  { id: 0, name: 'WASD', keys: ['A', 'D', 'W', 'S'] },
+  { id: 1, name: 'Setas', keys: ['←', '→', '↑', '↓'] },
+  { id: 2, name: 'IJKL', keys: ['J', 'L', 'I', 'K'] },
+  { id: 3, name: 'Numpad', keys: ['4', '6', '8', '5'] },
+];
 
 const playerColors = [
   { name: "Green", value: "#2ECC71" },
@@ -29,11 +36,24 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     player3: "#E74C3C",
     player4: "#9B59B6"
   });
+  const [selectedControls, setSelectedControls] = useState({
+    player1: 0,
+    player2: 1,
+    player3: 2,
+    player4: 3
+  });
 
   const handleColorSelect = (player: string, color: string) => {
     setSelectedColors(prev => ({
       ...prev,
       [player]: color
+    }));
+  };
+
+  const handleControlSelect = (player: string, controlId: number) => {
+    setSelectedControls(prev => ({
+      ...prev,
+      [player]: controlId
     }));
   };
 
@@ -44,17 +64,13 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         selectedColors[`player${i + 1}` as keyof typeof selectedColors]
       ])
     );
-    onStartGame({ playerCount, colors, startLevel, mode: selectedMode, runnerLevel });
-  };
-
-  const getPlayerControls = (playerIndex: number) => {
-    const controls = [
-      { keys: ['A', 'D', 'W'], labels: ['Move Left', 'Move Right', 'Jump'] },
-      { keys: ['←', '→', '↑'], labels: ['Move Left', 'Move Right', 'Jump'] },
-      { keys: ['J', 'L', 'I'], labels: ['Move Left', 'Move Right', 'Jump'] },
-      { keys: ['Num4', 'Num6', 'Num8'], labels: ['Move Left', 'Move Right', 'Jump'] }
-    ];
-    return controls[playerIndex] || controls[0];
+    const controls = Object.fromEntries(
+      Array.from({ length: playerCount }, (_, i) => [
+        `player${i + 1}`,
+        selectedControls[`player${i + 1}` as keyof typeof selectedControls]
+      ])
+    );
+    onStartGame({ playerCount, colors, startLevel, mode: selectedMode, runnerLevel, controls });
   };
 
   return (
@@ -180,16 +196,17 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         }`}>
           {Array.from({ length: playerCount }, (_, index) => {
             const playerKey = `player${index + 1}` as keyof typeof selectedColors;
-            const controls = getPlayerControls(index);
+            const controlKey = `player${index + 1}` as keyof typeof selectedControls;
+            const selectedScheme = controlSchemes[selectedControls[controlKey]];
             
             return (
               <div key={playerKey}>
                 <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors[playerKey] }}>
                   Vítima {index + 1}
                 </h3>
-                <div className="mb-4">
-                  <p className="text-sm font-medium mb-2">Escolha sua Cor da Derrota:</p>
-                  <div className="grid grid-cols-4 gap-2 mb-3">
+                <div className="mb-3">
+                  <p className="text-sm font-medium mb-2">Cor da Derrota:</p>
+                  <div className="grid grid-cols-4 gap-2">
                     {playerColors.map((color) => (
                       <button
                         key={`${playerKey}-${color.value}`}
@@ -203,14 +220,47 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
                     ))}
                   </div>
                 </div>
-                <div className="space-y-1 text-sm">
-                  {controls.keys.map((key, keyIndex) => (
-                    <div key={keyIndex}>
-                      <kbd className="px-2 py-1 rounded text-white text-xs" style={{ backgroundColor: selectedColors[playerKey] }}>
-                        {key}
-                      </kbd> {['Esquerda (Fuga)', 'Direita (Ilusão)', 'Pular (2x = Duplo)'][keyIndex]}
-                    </div>
-                  ))}
+                <div className="mb-3">
+                  <p className="text-sm font-medium mb-2">Controles:</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {controlSchemes.map((scheme) => (
+                      <button
+                        key={`${playerKey}-${scheme.id}`}
+                        className={`px-2 py-1 text-xs rounded border transition-all ${
+                          selectedControls[controlKey] === scheme.id
+                            ? 'border-2 font-bold'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        style={{
+                          backgroundColor: selectedControls[controlKey] === scheme.id ? selectedColors[playerKey] : 'transparent',
+                          color: selectedControls[controlKey] === scheme.id ? '#fff' : 'inherit',
+                          borderColor: selectedControls[controlKey] === scheme.id ? selectedColors[playerKey] : undefined
+                        }}
+                        onClick={() => handleControlSelect(controlKey, scheme.id)}
+                      >
+                        {scheme.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div>
+                    <kbd className="px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: selectedColors[playerKey] }}>
+                      {selectedScheme.keys[0]}
+                    </kbd>/<kbd className="px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: selectedColors[playerKey] }}>
+                      {selectedScheme.keys[1]}
+                    </kbd> Mover
+                  </div>
+                  <div>
+                    <kbd className="px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: selectedColors[playerKey] }}>
+                      {selectedScheme.keys[2]}
+                    </kbd> Pular (2x = Duplo)
+                  </div>
+                  <div>
+                    <kbd className="px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: selectedColors[playerKey] }}>
+                      {selectedScheme.keys[3]}
+                    </kbd> Agachar
+                  </div>
                 </div>
               </div>
             );

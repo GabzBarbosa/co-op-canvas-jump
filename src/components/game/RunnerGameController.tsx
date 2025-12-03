@@ -22,7 +22,7 @@ export class RunnerGameController {
   private readonly targetFPS = 60;
   private readonly frameTime = 1000 / this.targetFPS;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: RunnerGameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string> }) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: RunnerGameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; controls?: Record<string, number> }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
@@ -30,7 +30,7 @@ export class RunnerGameController {
 
     // Initialize game objects
     this.level = new RunnerLevel();
-    this.inputHandler = new InputHandler(canvas, gameConfig.playerCount);
+    this.inputHandler = new InputHandler(canvas, gameConfig.playerCount, gameConfig.controls);
     
     // Create players at starting positions - centered on screen
     const centerX = 300; // Fixed position in the middle of the screen
