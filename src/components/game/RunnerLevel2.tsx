@@ -1,6 +1,6 @@
 interface Obstacle {
   position: { x: number; y: number };
-  type: 'pipe' | 'coin' | 'questionBlock' | 'goomba' | 'gap';
+  type: 'pipe' | 'coin' | 'questionBlock' | 'goomba' | 'gap' | 'bulletBill' | 'boo';
   width: number;
   height: number;
   requiresJump: boolean;
@@ -15,7 +15,7 @@ interface Coin {
 export class RunnerLevel2 {
   private obstacles: Obstacle[] = [];
   private coins: Coin[] = [];
-  private scrollSpeed = 220; // Base speed (increased)
+  private scrollSpeed = 270; // Base speed (increased)
   private distanceTraveled = 0;
   private targetDistance = 800; // 800 meters to complete
   private spawnTimer = 0;
@@ -31,7 +31,7 @@ export class RunnerLevel2 {
   reset() {
     this.obstacles = [];
     this.coins = [];
-    this.scrollSpeed = 220;
+    this.scrollSpeed = 270;
     this.distanceTraveled = 0;
     this.spawnTimer = 0;
     this.difficulty = 1;
@@ -54,11 +54,11 @@ export class RunnerLevel2 {
     // Increase difficulty over time
     if (this.distanceTraveled > 200 && this.difficulty < 2) {
       this.difficulty = 2;
-      this.scrollSpeed = 240;
+      this.scrollSpeed = 300;
       this.spawnInterval = 1.8;
     } else if (this.distanceTraveled > 500 && this.difficulty < 3) {
       this.difficulty = 3;
-      this.scrollSpeed = 260;
+      this.scrollSpeed = 330;
       this.spawnInterval = 1.6;
     }
     
@@ -141,7 +141,7 @@ export class RunnerLevel2 {
           collected: false
         });
       }
-    } else if (rand < 0.7) {
+    } else if (rand < 0.6) {
       // Spawn goomba enemy
       this.obstacles.push({
         position: { x, y: 340 },
@@ -151,7 +151,27 @@ export class RunnerLevel2 {
         requiresJump: true,
         requiresCrouch: false
       });
-    } else if (rand < 0.85) {
+    } else if (rand < 0.72) {
+      // Spawn Bullet Bill (requires crouch)
+      this.obstacles.push({
+        position: { x, y: 300 },
+        type: 'bulletBill',
+        width: 50,
+        height: 30,
+        requiresJump: false,
+        requiresCrouch: true
+      });
+    } else if (rand < 0.84) {
+      // Spawn Boo ghost (requires crouch)
+      this.obstacles.push({
+        position: { x, y: 280 },
+        type: 'boo',
+        width: 40,
+        height: 40,
+        requiresJump: false,
+        requiresCrouch: true
+      });
+    } else if (rand < 0.92) {
       // Spawn gap (needs jump) - smaller gap
       this.obstacles.push({
         position: { x, y: 370 },
@@ -382,6 +402,66 @@ export class RunnerLevel2 {
             obstacle.width,
             obstacle.height
           );
+          break;
+          
+        case 'bulletBill':
+          // Black bullet
+          ctx.fillStyle = "#1a1a1a";
+          ctx.beginPath();
+          ctx.ellipse(
+            obstacle.position.x + obstacle.width / 2,
+            obstacle.position.y + obstacle.height / 2,
+            obstacle.width / 2,
+            obstacle.height / 2,
+            0, 0, Math.PI * 2
+          );
+          ctx.fill();
+          
+          // White eyes
+          ctx.fillStyle = "#FFF";
+          ctx.beginPath();
+          ctx.arc(obstacle.position.x + 35, obstacle.position.y + 10, 5, 0, Math.PI * 2);
+          ctx.arc(obstacle.position.x + 35, obstacle.position.y + 20, 5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Red arm bands
+          ctx.fillStyle = "#E74C3C";
+          ctx.fillRect(obstacle.position.x + 5, obstacle.position.y + 5, 8, obstacle.height - 10);
+          break;
+          
+        case 'boo':
+          // White ghost body
+          ctx.fillStyle = "#FFF";
+          ctx.beginPath();
+          ctx.arc(
+            obstacle.position.x + obstacle.width / 2,
+            obstacle.position.y + obstacle.height / 2,
+            obstacle.width / 2,
+            0, Math.PI * 2
+          );
+          ctx.fill();
+          
+          // Ghost tail
+          ctx.beginPath();
+          ctx.moveTo(obstacle.position.x, obstacle.position.y + obstacle.height / 2);
+          ctx.quadraticCurveTo(
+            obstacle.position.x - 15, obstacle.position.y + obstacle.height,
+            obstacle.position.x + 10, obstacle.position.y + obstacle.height - 5
+          );
+          ctx.fill();
+          
+          // Eyes
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          ctx.arc(obstacle.position.x + 12, obstacle.position.y + 15, 5, 0, Math.PI * 2);
+          ctx.arc(obstacle.position.x + 28, obstacle.position.y + 15, 5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Tongue
+          ctx.fillStyle = "#E74C3C";
+          ctx.beginPath();
+          ctx.ellipse(obstacle.position.x + 20, obstacle.position.y + 30, 6, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
           break;
       }
     });
