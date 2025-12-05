@@ -15,7 +15,7 @@ interface Coin {
 export class RunnerLevel2 {
   private obstacles: Obstacle[] = [];
   private coins: Coin[] = [];
-  private scrollSpeed = 200; // Base speed
+  private scrollSpeed = 220; // Base speed (increased)
   private distanceTraveled = 0;
   private targetDistance = 800; // 800 meters to complete
   private spawnTimer = 0;
@@ -31,7 +31,7 @@ export class RunnerLevel2 {
   reset() {
     this.obstacles = [];
     this.coins = [];
-    this.scrollSpeed = 200;
+    this.scrollSpeed = 220;
     this.distanceTraveled = 0;
     this.spawnTimer = 0;
     this.difficulty = 1;
@@ -54,11 +54,11 @@ export class RunnerLevel2 {
     // Increase difficulty over time
     if (this.distanceTraveled > 200 && this.difficulty < 2) {
       this.difficulty = 2;
-      this.scrollSpeed = 220;
+      this.scrollSpeed = 240;
       this.spawnInterval = 1.8;
     } else if (this.distanceTraveled > 500 && this.difficulty < 3) {
       this.difficulty = 3;
-      this.scrollSpeed = 240;
+      this.scrollSpeed = 260;
       this.spawnInterval = 1.6;
     }
     
@@ -104,12 +104,12 @@ export class RunnerLevel2 {
     const x = 1000;
     
     if (rand < 0.3) {
-      // Spawn pipe
-      const height = 80 + Math.floor(Math.random() * 2) * 40;
+      // Spawn pipe (smaller height)
+      const height = 50 + Math.floor(Math.random() * 2) * 20;
       this.obstacles.push({
         position: { x, y: 370 - height },
         type: 'pipe',
-        width: 50,
+        width: 40,
         height,
         requiresJump: true,
         requiresCrouch: false
@@ -152,18 +152,18 @@ export class RunnerLevel2 {
         requiresCrouch: false
       });
     } else if (rand < 0.85) {
-      // Spawn gap (needs jump)
+      // Spawn gap (needs jump) - smaller gap
       this.obstacles.push({
         position: { x, y: 370 },
         type: 'gap',
-        width: 80 + Math.random() * 40,
+        width: 60 + Math.random() * 30,
         height: 200,
         requiresJump: true,
         requiresCrouch: false
       });
     } else {
       // Spawn combo: pipe + coins + goomba
-      const pipeHeight = 80;
+      const pipeHeight = 50;
       this.obstacles.push({
         position: { x, y: 370 - pipeHeight },
         type: 'pipe',
