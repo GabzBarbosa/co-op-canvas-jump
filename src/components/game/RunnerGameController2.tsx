@@ -211,7 +211,7 @@ export class RunnerGameController2 {
     // Controls reminder
     this.ctx.fillStyle = "#FFFFFF";
     this.ctx.textAlign = "right";
-    this.ctx.fillText("↑ PULAR  ↓ ABAIXAR", this.canvas.width - 20, 30);
+    this.ctx.fillText("↑ PULAR (2x)  ↓ ABAIXAR", this.canvas.width - 20, 30);
   }
 
   restartLevel() {
