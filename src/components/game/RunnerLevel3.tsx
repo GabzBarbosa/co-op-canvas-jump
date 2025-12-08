@@ -27,6 +27,10 @@ export class RunnerLevel3 {
   private firePositions: Array<{ x: number; y: number; frame: number }> = [];
   private powerupsCollected = 0;
   private gridOffset = 0;
+  
+  // Sound event flags
+  public pendingExplosionSound = false;
+  public pendingCollectSound = false;
 
   constructor() {
     this.reset();
@@ -85,6 +89,7 @@ export class RunnerLevel3 {
           this.obstacles[i].width = 80;
           this.obstacles[i].height = 80;
           this.obstacles[i].position.y -= 25;
+          this.pendingExplosionSound = true;
         }
       }
       
@@ -271,6 +276,7 @@ export class RunnerLevel3 {
       })) {
         powerup.collected = true;
         this.powerupsCollected++;
+        this.pendingCollectSound = true;
         collisions.powerups.push(powerup);
       }
     }

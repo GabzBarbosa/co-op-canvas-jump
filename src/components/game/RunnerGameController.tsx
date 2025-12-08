@@ -1,6 +1,7 @@
 import { Player } from "./Player";
 import { RunnerLevel } from "./RunnerLevel";
 import { InputHandler } from "./InputHandler";
+import { soundGenerator } from "@/hooks/useSoundEffects";
 
 interface RunnerGameCallbacks {
   onPlayerDeath: () => void;
@@ -94,8 +95,10 @@ export class RunnerGameController {
     // In runner mode, only handle jump and crouch
     if (input.jump && player.canJump()) {
       player.jump();
+      soundGenerator.playJump();
     } else if (input.doubleJump && player.canPerformDoubleJump()) {
       player.doubleJump();
+      soundGenerator.playDoubleJump();
     }
     
     // Crouch control (down arrow)
@@ -118,6 +121,7 @@ export class RunnerGameController {
     // Check obstacle collisions
     if (collisions.obstacles.length > 0) {
       // Player hit obstacle - game over
+      soundGenerator.playHit();
       this.callbacks.onPlayerDeath();
       return;
     }
