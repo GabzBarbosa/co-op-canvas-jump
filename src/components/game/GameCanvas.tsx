@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { GameController } from "./GameController";
 import { RunnerGameController } from "./RunnerGameController";
 import { RunnerGameController2 } from "./RunnerGameController2";
+import { RunnerGameController3 } from "./RunnerGameController3";
 import { Button } from "@/components/ui/button";
 
 interface GameCanvasProps {
@@ -9,12 +10,12 @@ interface GameCanvasProps {
   onRestart: () => void;
   onLevelComplete: () => void;
   gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number; controls?: Record<string, number> };
-  mode?: "platformer" | "runner" | "runner2";
+  mode?: "platformer" | "runner" | "runner2" | "runner3";
 }
 
 export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, mode = "platformer" }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameControllerRef = useRef<GameController | RunnerGameController | RunnerGameController2 | null>(null);
+  const gameControllerRef = useRef<GameController | RunnerGameController | RunnerGameController2 | RunnerGameController3 | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
   const [showVictoryOverlay, setShowVictoryOverlay] = useState(false);
   const [showLevelCompleteOverlay, setShowLevelCompleteOverlay] = useState(false);
@@ -114,6 +115,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
         onPlayerDeath: handlePlayerDeath,
         onVictory: handleVictory,
       }, gameConfig);
+    } else if (mode === "runner3") {
+      gameControllerRef.current = new RunnerGameController3(canvas, ctx, {
+        onPlayerDeath: handlePlayerDeath,
+        onVictory: handleVictory,
+      }, gameConfig);
     } else {
       gameControllerRef.current = new GameController(canvas, ctx, {
         onPlayerDeath: handlePlayerDeath,
@@ -145,6 +151,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
           <div className="text-primary font-bold">
             {mode === "runner" ? "CHAPTER 2: RUN FOR YOUR LIFE!" : 
              mode === "runner2" ? "CHAPTER 3: MARIO'S WORLD!" :
+             mode === "runner3" ? "CHAPTER 4: BOMBERMAN'S ARENA!" :
              currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
           </div>
           {mode === "runner" && gameControllerRef.current && (
@@ -156,6 +163,12 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
             <div className="text-white font-bold">
               {(gameControllerRef.current as RunnerGameController2).getDistanceProgress?.()?.current || 0}m / {(gameControllerRef.current as RunnerGameController2).getDistanceProgress?.()?.target || 800}m
               <span className="ml-3 text-yellow-500">🪙 {(gameControllerRef.current as RunnerGameController2).getCoinsCollected?.() || 0}</span>
+            </div>
+          )}
+          {mode === "runner3" && gameControllerRef.current && (
+            <div className="text-white font-bold">
+              {(gameControllerRef.current as RunnerGameController3).getDistanceProgress?.()?.current || 0}m / {(gameControllerRef.current as RunnerGameController3).getDistanceProgress?.()?.target || 900}m
+              <span className="ml-3 text-orange-400">⚡ {(gameControllerRef.current as RunnerGameController3).getPowerupsCollected?.() || 0}</span>
             </div>
           )}
           {mode === "platformer" && (currentLevel === 1 || currentLevel === 2 || currentLevel === 3) && (
@@ -196,7 +209,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
 
       {/* Controls hint */}
       <div className="absolute top-4 right-4 bg-card/90 p-3 rounded border border-border text-xs">
-        {(mode === "runner" || mode === "runner2") ? (
+        {(mode === "runner" || mode === "runner2" || mode === "runner3") ? (
           <div className="text-center">
             <div className="text-white font-bold mb-1">CONTROLES:</div>
             {Array.from({ length: gameConfig.playerCount }, (_, i) => {
