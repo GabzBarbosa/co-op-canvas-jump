@@ -23,6 +23,9 @@ export class RunnerLevel2 {
   private difficulty = 1;
   private cloudPositions: Array<{ x: number; y: number }> = [];
   private coinsCollected = 0;
+  
+  // Sound event flag
+  public pendingCollectSound = false;
 
   constructor() {
     this.reset();
@@ -244,6 +247,7 @@ export class RunnerLevel2 {
       })) {
         coin.collected = true;
         this.coinsCollected++;
+        this.pendingCollectSound = true;
         collisions.coins.push(coin);
       }
     }
