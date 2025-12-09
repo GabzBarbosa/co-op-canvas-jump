@@ -4,6 +4,7 @@ import { RunnerGameController } from "./RunnerGameController";
 import { RunnerGameController2 } from "./RunnerGameController2";
 import { RunnerGameController3 } from "./RunnerGameController3";
 import { Button } from "@/components/ui/button";
+import { useBackgroundMusic } from "@/hooks/useSoundEffects";
 
 interface GameCanvasProps {
   onVictory: () => void;
@@ -21,6 +22,17 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
   const [showLevelCompleteOverlay, setShowLevelCompleteOverlay] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
 
+  // Determine which music to play based on mode
+  const getMusicLevel = () => {
+    if (mode === "runner") return "sonic" as const;
+    if (mode === "runner2") return "mario" as const;
+    if (mode === "runner3") return "bomberman" as const;
+    return "platformer" as const;
+  };
+
+  // Background music hook
+  const { stopMusic } = useBackgroundMusic(getMusicLevel());
+
   const handlePlayerDeath = useCallback(() => {
     setShowDeathOverlay(true);
     setTimeout(() => {
@@ -30,12 +42,13 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
   }, []);
 
   const handleVictory = useCallback(() => {
+    stopMusic();
     setShowVictoryOverlay(true);
     setTimeout(() => {
       setShowVictoryOverlay(false);
       onVictory();
     }, 2000);
-  }, [onVictory]);
+  }, [onVictory, stopMusic]);
 
   const handleLevelComplete = useCallback(() => {
     setShowLevelCompleteOverlay(true);
