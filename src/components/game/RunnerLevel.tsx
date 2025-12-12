@@ -33,10 +33,12 @@ export class RunnerLevel {
     // Update distance traveled
     this.distanceTraveled += (this.scrollSpeed * deltaTime) / 100; // Convert to meters
     
-    // Increase difficulty over time
-    this.difficulty = 1 + (this.distanceTraveled / 100);
-    this.scrollSpeed = 150 + (this.difficulty * 20);
-    this.obstacleSpawnInterval = Math.max(1, 2 - (this.difficulty * 0.1));
+    // Increase speed by 0.5 every 50 meters (gradual increase)
+    const speedIncrements = Math.floor(this.distanceTraveled / 50);
+    this.scrollSpeed = 150 + (speedIncrements * 0.5);
+    
+    // Adjust spawn interval based on speed
+    this.obstacleSpawnInterval = Math.max(0.8, 2 - (speedIncrements * 0.05));
     
     // Update obstacles
     this.obstacles = this.obstacles.filter(obstacle => {
