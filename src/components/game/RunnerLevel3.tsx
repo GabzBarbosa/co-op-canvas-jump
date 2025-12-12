@@ -64,16 +64,10 @@ export class RunnerLevel3 {
     // Update grid offset for background animation
     this.gridOffset = (this.gridOffset + this.scrollSpeed * deltaTime) % 40;
     
-    // Increase difficulty over time
-    if (this.distanceTraveled > 250 && this.difficulty < 2) {
-      this.difficulty = 2;
-      this.scrollSpeed = 300;
-      this.spawnInterval = 1.5;
-    } else if (this.distanceTraveled > 550 && this.difficulty < 3) {
-      this.difficulty = 3;
-      this.scrollSpeed = 340;
-      this.spawnInterval = 1.2;
-    }
+    // Increase speed by 0.5 every 50 meters (gradual increase)
+    const speedIncrements = Math.floor(this.distanceTraveled / 50);
+    this.scrollSpeed = 260 + (speedIncrements * 0.5);
+    this.spawnInterval = Math.max(1.0, 1.8 - (speedIncrements * 0.04));
     
     // Update obstacles
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
