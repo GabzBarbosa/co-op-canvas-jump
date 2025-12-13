@@ -149,9 +149,9 @@ export class RunnerLevel2 {
         requiresCrouch: false
       });
     } else if (rand < 0.72) {
-      // Spawn Bullet Bill (requires crouch)
+      // Spawn Bullet Bill (requires crouch) - lowered height
       this.obstacles.push({
-        position: { x, y: 300 },
+        position: { x, y: 320 },
         type: 'bulletBill',
         width: 50,
         height: 30,
@@ -159,9 +159,9 @@ export class RunnerLevel2 {
         requiresCrouch: true
       });
     } else if (rand < 0.84) {
-      // Spawn Boo ghost (requires crouch)
+      // Spawn Boo ghost (requires crouch) - lowered height
       this.obstacles.push({
-        position: { x, y: 280 },
+        position: { x, y: 310 },
         type: 'boo',
         width: 40,
         height: 40,
