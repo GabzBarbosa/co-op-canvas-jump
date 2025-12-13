@@ -2,7 +2,7 @@ import { RunnerObstacle, ObstacleType } from "./RunnerObstacle";
 
 export class RunnerLevel {
   private obstacles: RunnerObstacle[] = [];
-  private scrollSpeed: number = 150; // pixels per second
+  private scrollSpeed: number = 260; // pixels per second
   private distanceTraveled: number = 0;
   private targetDistance: number = 500; // meters to win
   private lastObstacleSpawn: number = 0;
@@ -31,14 +31,14 @@ export class RunnerLevel {
 
   update(deltaTime: number) {
     // Update distance traveled
-    this.distanceTraveled += (this.scrollSpeed * deltaTime) / 100; // Convert to meters
+    this.distanceTraveled += (this.scrollSpeed * deltaTime) / 10; // Convert to meters
     
     // Increase speed by 1.5 every 50 meters (gradual increase)
     const speedIncrements = Math.floor(this.distanceTraveled / 50);
-    this.scrollSpeed = 150 + (speedIncrements * 1.5);
+    this.scrollSpeed = 260 + (speedIncrements * 1.5);
     
     // Adjust spawn interval based on speed
-    this.obstacleSpawnInterval = Math.max(0.8, 2 - (speedIncrements * 0.05));
+    this.obstacleSpawnInterval = Math.max(1.0, 2 - (speedIncrements * 0.04));
     
     // Update obstacles
     this.obstacles = this.obstacles.filter(obstacle => {
@@ -173,7 +173,7 @@ export class RunnerLevel {
     this.distanceTraveled = 0;
     this.lastObstacleSpawn = 0;
     this.difficulty = 1;
-    this.scrollSpeed = 150;
+    this.scrollSpeed = 260;
     this.spawnInitialObstacles();
   }
 
