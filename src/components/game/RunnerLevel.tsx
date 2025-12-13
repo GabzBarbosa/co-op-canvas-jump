@@ -4,7 +4,7 @@ export class RunnerLevel {
   private obstacles: RunnerObstacle[] = [];
   private scrollSpeed: number = 260; // pixels per second
   private distanceTraveled: number = 0;
-  private targetDistance: number = 500; // meters to win
+  private targetDistance: number = 1300; // meters to win
   private lastObstacleSpawn: number = 0;
   private obstacleSpawnInterval: number = 2; // seconds
   private difficulty: number = 1;

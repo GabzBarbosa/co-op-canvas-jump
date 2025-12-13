@@ -17,7 +17,7 @@ export class RunnerLevel2 {
   private coins: Coin[] = [];
   private scrollSpeed = 270; // Base speed (increased)
   private distanceTraveled = 0;
-  private targetDistance = 800; // 800 meters to complete
+  private targetDistance = 1300; // 1300 meters to complete
   private spawnTimer = 0;
   private spawnInterval = 2.0;
   private difficulty = 1;

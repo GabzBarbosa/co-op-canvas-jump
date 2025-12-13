@@ -20,7 +20,7 @@ export class RunnerLevel3 {
   private powerups: Powerup[] = [];
   private scrollSpeed = 260;
   private distanceTraveled = 0;
-  private targetDistance = 900;
+  private targetDistance = 1300;
   private spawnTimer = 0;
   private spawnInterval = 1.8;
   private difficulty = 1;
