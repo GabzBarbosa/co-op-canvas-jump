@@ -4,9 +4,10 @@ import { GameCanvas } from "@/components/game/GameCanvas";
 import { Chapter2Screen } from "@/components/game/Chapter2Screen";
 import { Chapter3Screen } from "@/components/game/Chapter3Screen";
 import { Chapter4Screen } from "@/components/game/Chapter4Screen";
+import { Chapter5Screen } from "@/components/game/Chapter5Screen";
 import { Helmet } from "react-helmet-async";
 
-type GameState = "title" | "playing" | "victory" | "chapter2" | "runner" | "chapter3" | "runner2" | "chapter4" | "runner3";
+type GameState = "title" | "playing" | "victory" | "chapter2" | "runner" | "chapter3" | "runner2" | "chapter4" | "runner3" | "chapter5" | "runnerBoss";
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
@@ -65,6 +66,14 @@ const Game = () => {
   };
 
   const handleRunner3Victory = () => {
+    setGameState("chapter5");
+  };
+
+  const handleChapter5Start = () => {
+    setGameState("runnerBoss");
+  };
+
+  const handleRunnerBossVictory = () => {
     setGameState("victory");
   };
 
@@ -136,6 +145,20 @@ const Game = () => {
               onLevelComplete={() => {}}
               gameConfig={gameConfig}
               mode="runner3"
+            />
+          )}
+
+          {gameState === "chapter5" && (
+            <Chapter5Screen onStart={handleChapter5Start} />
+          )}
+          
+          {gameState === "runnerBoss" && (
+            <GameCanvas 
+              onVictory={handleRunnerBossVictory}
+              onRestart={handleRestart}
+              onLevelComplete={() => {}}
+              gameConfig={gameConfig}
+              mode="runnerBoss"
             />
           )}
           
