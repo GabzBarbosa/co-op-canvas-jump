@@ -7,7 +7,7 @@ import { Chapter4Screen } from "@/components/game/Chapter4Screen";
 import { Chapter5Screen } from "@/components/game/Chapter5Screen";
 import { Helmet } from "react-helmet-async";
 
-type GameState = "title" | "playing" | "victory" | "chapter2" | "runner" | "chapter3" | "runner2" | "chapter4" | "runner3" | "chapter5" | "runnerBoss";
+type GameState = "title" | "playing" | "victory" | "chapter2" | "runner" | "chapter3" | "runner2" | "chapter4" | "runner3" | "chapter5" | "runnerBoss" | "chapter6" | "runner4";
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>("title");
@@ -28,8 +28,10 @@ const Game = () => {
       controls: config.controls || {}
     });
     if (config.mode === 'runner') {
-      if (config.runnerLevel === 4) {
+      if (config.runnerLevel === 5) {
         setGameState("runnerBoss");
+      } else if (config.runnerLevel === 4) {
+        setGameState("runner4");
       } else if (config.runnerLevel === 3) {
         setGameState("runner3");
       } else if (config.runnerLevel === 2) {
