@@ -4,6 +4,7 @@ import { RunnerGameController } from "./RunnerGameController";
 import { RunnerGameController2 } from "./RunnerGameController2";
 import { RunnerGameController3 } from "./RunnerGameController3";
 import { RunnerGameController4 } from "./RunnerGameController4";
+import { RunnerGameController5 } from "./RunnerGameController5";
 import { Button } from "@/components/ui/button";
 import { useBackgroundMusic } from "@/hooks/useSoundEffects";
 
@@ -12,12 +13,12 @@ interface GameCanvasProps {
   onRestart: () => void;
   onLevelComplete: () => void;
   gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number; controls?: Record<string, number> };
-  mode?: "platformer" | "runner" | "runner2" | "runner3" | "runnerBoss";
+  mode?: "platformer" | "runner" | "runner2" | "runner3" | "runner4" | "runnerBoss";
 }
 
 export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, mode = "platformer" }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameControllerRef = useRef<GameController | RunnerGameController | RunnerGameController2 | RunnerGameController3 | RunnerGameController4 | null>(null);
+  const gameControllerRef = useRef<GameController | RunnerGameController | RunnerGameController2 | RunnerGameController3 | RunnerGameController4 | RunnerGameController5 | null>(null);
   const [showDeathOverlay, setShowDeathOverlay] = useState(false);
   const [showVictoryOverlay, setShowVictoryOverlay] = useState(false);
   const [showLevelCompleteOverlay, setShowLevelCompleteOverlay] = useState(false);
@@ -28,7 +29,8 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
     if (mode === "runner") return "sonic" as const;
     if (mode === "runner2") return "mario" as const;
     if (mode === "runner3") return "bomberman" as const;
-    if (mode === "runnerBoss") return "bomberman" as const; // Epic boss music
+    if (mode === "runner4") return "mario" as const;
+    if (mode === "runnerBoss") return "bomberman" as const;
     return "platformer" as const;
   };
 
@@ -135,6 +137,11 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
         onPlayerDeath: handlePlayerDeath,
         onVictory: handleVictory,
       }, gameConfig);
+    } else if (mode === "runner4") {
+      gameControllerRef.current = new RunnerGameController5(canvas, {
+        onPlayerDeath: handlePlayerDeath,
+        onVictory: handleVictory,
+      });
     } else if (mode === "runnerBoss") {
       gameControllerRef.current = new RunnerGameController4(canvas, ctx, {
         onPlayerDeath: handlePlayerDeath,
@@ -172,6 +179,7 @@ export const GameCanvas = ({ onVictory, onRestart, onLevelComplete, gameConfig, 
             {mode === "runner" ? "CHAPTER 2: RUN FOR YOUR LIFE!" : 
              mode === "runner2" ? "CHAPTER 3: MARIO'S WORLD!" :
              mode === "runner3" ? "CHAPTER 4: BOMBERMAN'S ARENA!" :
+             mode === "runner4" ? "💔 DESTRUIR AMIZADES!" :
              mode === "runnerBoss" ? "CHAPTER 5: ULTIMATE BOSS!" :
              currentLevel === 4 ? "BOSS FIGHT" : `Inferno ${currentLevel}`}
           </div>
