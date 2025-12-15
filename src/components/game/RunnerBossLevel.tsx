@@ -601,14 +601,17 @@ export class RunnerBossLevel {
         break;
         
       case 'explosion':
-        const progress = obstacle.explosionTimer ? obstacle.explosionTimer / 0.5 : 1;
-        ctx.fillStyle = `rgba(255, 107, 53, ${progress * 0.8})`;
+        const maxTimer = obstacle.explosionTimer && obstacle.explosionTimer > 0.5 ? obstacle.explosionTimer : 0.5;
+        const progress = Math.min(1, (obstacle.explosionTimer || 0) / maxTimer);
+        const outerRadius = Math.max(5, 35 * (1 + (1 - progress) * 0.5));
+        const middleRadius = Math.max(3, 25 * (1 + (1 - progress) * 0.5));
+        ctx.fillStyle = `rgba(255, 107, 53, ${Math.min(1, progress * 0.8)})`;
         ctx.beginPath();
-        ctx.arc(x + obstacle.width / 2, y + obstacle.height / 2, 35 * (2 - progress), 0, Math.PI * 2);
+        ctx.arc(x + obstacle.width / 2, y + obstacle.height / 2, outerRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = `rgba(255, 200, 0, ${progress})`;
+        ctx.fillStyle = `rgba(255, 200, 0, ${Math.min(1, progress)})`;
         ctx.beginPath();
-        ctx.arc(x + obstacle.width / 2, y + obstacle.height / 2, 25 * (2 - progress), 0, Math.PI * 2);
+        ctx.arc(x + obstacle.width / 2, y + obstacle.height / 2, middleRadius, 0, Math.PI * 2);
         ctx.fill();
         break;
         

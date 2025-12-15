@@ -438,36 +438,43 @@ export class RunnerLevel3 {
   private renderExplosion(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
     const x = obstacle.position.x + obstacle.width / 2;
     const y = obstacle.position.y + obstacle.height / 2;
-    const progress = obstacle.explosionTimer ? obstacle.explosionTimer / 0.5 : 1;
+    const maxTimer = obstacle.explosionTimer && obstacle.explosionTimer > 0.5 ? obstacle.explosionTimer : 0.5;
+    const progress = Math.min(1, (obstacle.explosionTimer || 0) / maxTimer);
+    
+    // Ensure radius is always positive
+    const outerRadius = Math.max(5, 35 * (1 + (1 - progress) * 0.5));
+    const middleRadius = Math.max(3, 25 * (1 + (1 - progress) * 0.5));
+    const innerRadius = Math.max(2, 12 * (1 + (1 - progress) * 0.5));
     
     // Outer explosion
-    ctx.fillStyle = `rgba(255, 107, 53, ${progress * 0.8})`;
+    ctx.fillStyle = `rgba(255, 107, 53, ${Math.min(1, progress * 0.8)})`;
     ctx.beginPath();
-    ctx.arc(x, y, 35 * (2 - progress), 0, Math.PI * 2);
+    ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
     ctx.fill();
     
     // Middle explosion
-    ctx.fillStyle = `rgba(255, 200, 0, ${progress})`;
+    ctx.fillStyle = `rgba(255, 200, 0, ${Math.min(1, progress)})`;
     ctx.beginPath();
-    ctx.arc(x, y, 25 * (2 - progress), 0, Math.PI * 2);
+    ctx.arc(x, y, middleRadius, 0, Math.PI * 2);
     ctx.fill();
     
     // Inner explosion
-    ctx.fillStyle = `rgba(255, 255, 255, ${progress})`;
+    ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, progress)})`;
     ctx.beginPath();
-    ctx.arc(x, y, 12 * (2 - progress), 0, Math.PI * 2);
+    ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
     ctx.fill();
     
     // Explosion rays
-    ctx.strokeStyle = `rgba(255, 107, 53, ${progress * 0.6})`;
+    ctx.strokeStyle = `rgba(255, 107, 53, ${Math.min(1, progress * 0.6)})`;
     ctx.lineWidth = 8;
+    const rayLength = Math.max(5, 40 * (1 + (1 - progress) * 0.5));
     for (let i = 0; i < 4; i++) {
       const angle = (i / 4) * Math.PI * 2 + Date.now() / 200;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(
-        x + Math.cos(angle) * 40 * (2 - progress),
-        y + Math.sin(angle) * 40 * (2 - progress)
+        x + Math.cos(angle) * rayLength,
+        y + Math.sin(angle) * rayLength
       );
       ctx.stroke();
     }
