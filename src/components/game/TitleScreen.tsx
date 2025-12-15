@@ -150,7 +150,8 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
               {[
                 { level: 1, name: 'Assassinos', desc: 'Fuja dos vilões' },
                 { level: 2, name: 'Mundo Mario', desc: 'Estilo clássico' },
-                { level: 3, name: 'Bomberman', desc: 'Arena explosiva' }
+                { level: 3, name: 'Bomberman', desc: 'Arena explosiva' },
+                { level: 4, name: 'Boss Final', desc: 'O desafio supremo' }
               ].map(({ level, name, desc }) => (
                 <button
                   key={level}
