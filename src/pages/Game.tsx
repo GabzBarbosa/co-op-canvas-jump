@@ -28,7 +28,9 @@ const Game = () => {
       controls: config.controls || {}
     });
     if (config.mode === 'runner') {
-      if (config.runnerLevel === 3) {
+      if (config.runnerLevel === 4) {
+        setGameState("runnerBoss");
+      } else if (config.runnerLevel === 3) {
         setGameState("runner3");
       } else if (config.runnerLevel === 2) {
         setGameState("runner2");
