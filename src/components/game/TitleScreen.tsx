@@ -149,7 +149,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
             <div className="flex justify-center gap-2 mb-6 flex-wrap">
               {[
                 { level: 1, name: 'Assassinos', desc: 'Fuja dos vilões' },
-                { level: 2, name: 'Mundo Mario', desc: 'Estilo clássico' },
+                { level: 2, name: 'Glitch Digital', desc: 'Hackear o sistema' },
                 { level: 3, name: 'Bomberman', desc: 'Arena explosiva' },
                 { level: 4, name: 'Destruir Amizades', desc: '💔 Mario Kart vibes' },
                 { level: 5, name: 'Boss Final', desc: 'O desafio supremo' }

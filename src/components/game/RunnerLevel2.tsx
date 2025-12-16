@@ -1,30 +1,32 @@
 interface Obstacle {
   position: { x: number; y: number };
-  type: 'pipe' | 'coin' | 'questionBlock' | 'goomba' | 'gap' | 'bulletBill' | 'boo';
+  type: 'virus' | 'firewall' | 'bug' | 'glitch' | 'gap' | 'malware' | 'popup';
   width: number;
   height: number;
   requiresJump: boolean;
   requiresCrouch: boolean;
+  glitchOffset?: number;
 }
 
-interface Coin {
+interface DataPacket {
   position: { x: number; y: number };
   collected: boolean;
+  type: 'byte' | 'kilobyte';
 }
 
 export class RunnerLevel2 {
   private obstacles: Obstacle[] = [];
-  private coins: Coin[] = [];
-  private scrollSpeed = 270; // Base speed (increased)
+  private dataPackets: DataPacket[] = [];
+  private scrollSpeed = 270;
   private distanceTraveled = 0;
-  private targetDistance = 1300; // 1300 meters to complete
+  private targetDistance = 1300;
   private spawnTimer = 0;
   private spawnInterval = 2.0;
   private difficulty = 1;
-  private cloudPositions: Array<{ x: number; y: number }> = [];
-  private coinsCollected = 0;
+  private glitchLines: Array<{ x: number; y: number; width: number }> = [];
+  private dataCollected = 0;
+  private glitchTimer = 0;
   
-  // Sound event flag
   public pendingCollectSound = false;
 
   constructor() {
@@ -33,58 +35,63 @@ export class RunnerLevel2 {
 
   reset() {
     this.obstacles = [];
-    this.coins = [];
+    this.dataPackets = [];
     this.scrollSpeed = 270;
     this.distanceTraveled = 0;
     this.spawnTimer = 0;
     this.difficulty = 1;
-    this.coinsCollected = 0;
+    this.dataCollected = 0;
+    this.glitchTimer = 0;
     
-    // Initialize clouds
-    this.cloudPositions = [];
-    for (let i = 0; i < 5; i++) {
-      this.cloudPositions.push({
+    // Initialize glitch lines
+    this.glitchLines = [];
+    for (let i = 0; i < 8; i++) {
+      this.glitchLines.push({
         x: Math.random() * 1200,
-        y: 50 + Math.random() * 100
+        y: Math.random() * 400,
+        width: 50 + Math.random() * 150
       });
     }
   }
 
   update(deltaTime: number) {
-    // Update distance
     this.distanceTraveled += (this.scrollSpeed * deltaTime) / 10;
+    this.glitchTimer += deltaTime;
     
-    // Increase speed by 1.5 every 50 meters (gradual increase)
     const speedIncrements = Math.floor(this.distanceTraveled / 50);
     this.scrollSpeed = 280 + (speedIncrements * 1.5);
     this.spawnInterval = Math.max(1.2, 2 - (speedIncrements * 0.04));
     
-    // Update obstacles
+    // Update obstacles with glitch effect
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
       this.obstacles[i].position.x -= this.scrollSpeed * deltaTime;
       
-      // Remove off-screen obstacles
+      // Random glitch offset for some obstacles
+      if (this.obstacles[i].type === 'glitch') {
+        this.obstacles[i].glitchOffset = Math.sin(this.glitchTimer * 10) * 3;
+      }
+      
       if (this.obstacles[i].position.x < -100) {
         this.obstacles.splice(i, 1);
       }
     }
     
-    // Update coins
-    for (let i = this.coins.length - 1; i >= 0; i--) {
-      this.coins[i].position.x -= this.scrollSpeed * deltaTime;
+    // Update data packets
+    for (let i = this.dataPackets.length - 1; i >= 0; i--) {
+      this.dataPackets[i].position.x -= this.scrollSpeed * deltaTime;
       
-      // Remove off-screen coins
-      if (this.coins[i].position.x < -50) {
-        this.coins.splice(i, 1);
+      if (this.dataPackets[i].position.x < -50) {
+        this.dataPackets.splice(i, 1);
       }
     }
     
-    // Update clouds
-    this.cloudPositions.forEach(cloud => {
-      cloud.x -= this.scrollSpeed * deltaTime * 0.3;
-      if (cloud.x < -100) {
-        cloud.x = 1200;
-        cloud.y = 50 + Math.random() * 100;
+    // Update glitch lines
+    this.glitchLines.forEach(line => {
+      line.x -= this.scrollSpeed * deltaTime * 0.5;
+      if (line.x < -200) {
+        line.x = 1200;
+        line.y = Math.random() * 350;
+        line.width = 50 + Math.random() * 150;
       }
     });
     
@@ -92,84 +99,85 @@ export class RunnerLevel2 {
     this.spawnTimer += deltaTime;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      this.spawnMarioObstacle();
+      this.spawnGlitchObstacle();
     }
   }
 
-  private spawnMarioObstacle() {
+  private spawnGlitchObstacle() {
     const rand = Math.random();
     const x = 1000;
     
-    if (rand < 0.3) {
-      // Spawn pipe (smaller height)
-      const height = 50 + Math.floor(Math.random() * 2) * 20;
+    if (rand < 0.25) {
+      // Spawn virus (ground obstacle - jump over)
+      const size = 35 + Math.random() * 15;
       this.obstacles.push({
-        position: { x, y: 370 - height },
-        type: 'pipe',
-        width: 40,
-        height,
+        position: { x, y: 370 - size },
+        type: 'virus',
+        width: size,
+        height: size,
         requiresJump: true,
         requiresCrouch: false
       });
       
-      // Add coins above pipe
+      // Add data packets above
       for (let i = 0; i < 3; i++) {
-        this.coins.push({
-          position: { x: x + 10 + i * 20, y: 370 - height - 40 },
-          collected: false
+        this.dataPackets.push({
+          position: { x: x + i * 25, y: 370 - size - 50 },
+          collected: false,
+          type: Math.random() > 0.7 ? 'kilobyte' : 'byte'
         });
       }
-    } else if (rand < 0.5) {
-      // Spawn question blocks with coins
-      const blockCount = 1 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < blockCount; i++) {
+    } else if (rand < 0.45) {
+      // Spawn firewall barriers
+      const barrierCount = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < barrierCount; i++) {
         this.obstacles.push({
-          position: { x: x + i * 40, y: 250 },
-          type: 'questionBlock',
-          width: 30,
-          height: 30,
+          position: { x: x + i * 45, y: 250 },
+          type: 'firewall',
+          width: 35,
+          height: 35,
           requiresJump: false,
           requiresCrouch: false
         });
         
-        // Add coin above each block
-        this.coins.push({
-          position: { x: x + i * 40 + 5, y: 220 },
-          collected: false
+        this.dataPackets.push({
+          position: { x: x + i * 45 + 7, y: 215 },
+          collected: false,
+          type: 'kilobyte'
         });
       }
-    } else if (rand < 0.6) {
-      // Spawn goomba enemy
+    } else if (rand < 0.58) {
+      // Spawn bug (computer bug - ground enemy)
       this.obstacles.push({
         position: { x, y: 340 },
-        type: 'goomba',
-        width: 30,
+        type: 'bug',
+        width: 35,
         height: 30,
         requiresJump: true,
         requiresCrouch: false
       });
-    } else if (rand < 0.72) {
-      // Spawn Bullet Bill (requires crouch) - lowered height
+    } else if (rand < 0.70) {
+      // Spawn malware (flying - crouch)
       this.obstacles.push({
-        position: { x, y: 320 },
-        type: 'bulletBill',
+        position: { x, y: 315 },
+        type: 'malware',
         width: 50,
-        height: 30,
+        height: 35,
         requiresJump: false,
         requiresCrouch: true
       });
-    } else if (rand < 0.84) {
-      // Spawn Boo ghost (requires crouch) - lowered height
+    } else if (rand < 0.82) {
+      // Spawn popup (annoying popup - crouch)
       this.obstacles.push({
-        position: { x, y: 310 },
-        type: 'boo',
-        width: 40,
-        height: 40,
+        position: { x, y: 305 },
+        type: 'popup',
+        width: 60,
+        height: 50,
         requiresJump: false,
         requiresCrouch: true
       });
-    } else if (rand < 0.92) {
-      // Spawn gap (needs jump) - smaller gap
+    } else if (rand < 0.90) {
+      // Spawn gap (system crash)
       this.obstacles.push({
         position: { x, y: 370 },
         type: 'gap',
@@ -179,35 +187,35 @@ export class RunnerLevel2 {
         requiresCrouch: false
       });
     } else {
-      // Spawn combo: pipe + coins + goomba
-      const pipeHeight = 50;
+      // Combo: virus + bug + data
       this.obstacles.push({
-        position: { x, y: 370 - pipeHeight },
-        type: 'pipe',
+        position: { x, y: 320 },
+        type: 'virus',
         width: 50,
-        height: pipeHeight,
+        height: 50,
         requiresJump: true,
         requiresCrouch: false
       });
       
       this.obstacles.push({
-        position: { x: x + 100, y: 340 },
-        type: 'goomba',
-        width: 30,
+        position: { x: x + 120, y: 340 },
+        type: 'bug',
+        width: 35,
         height: 30,
         requiresJump: true,
         requiresCrouch: false
       });
       
-      // Coins in arc
+      // Data packets in arc
       for (let i = 0; i < 5; i++) {
         const angle = (i / 4) * Math.PI;
-        this.coins.push({
+        this.dataPackets.push({
           position: { 
-            x: x + 75 + Math.cos(angle) * 40, 
-            y: 300 - Math.sin(angle) * 60 
+            x: x + 85 + Math.cos(angle) * 40, 
+            y: 290 - Math.sin(angle) * 60 
           },
-          collected: false
+          collected: false,
+          type: i === 2 ? 'kilobyte' : 'byte'
         });
       }
     }
@@ -216,10 +224,9 @@ export class RunnerLevel2 {
   getCollisions(playerBounds: any) {
     const collisions = {
       obstacles: [] as Obstacle[],
-      coins: [] as Coin[]
+      coins: [] as DataPacket[]
     };
     
-    // Check obstacle collisions
     for (const obstacle of this.obstacles) {
       if (this.isColliding(playerBounds, {
         x: obstacle.position.x,
@@ -231,18 +238,17 @@ export class RunnerLevel2 {
       }
     }
     
-    // Check coin collisions
-    for (const coin of this.coins) {
-      if (!coin.collected && this.isColliding(playerBounds, {
-        x: coin.position.x,
-        y: coin.position.y,
+    for (const packet of this.dataPackets) {
+      if (!packet.collected && this.isColliding(playerBounds, {
+        x: packet.position.x,
+        y: packet.position.y,
         width: 20,
         height: 20
       })) {
-        coin.collected = true;
-        this.coinsCollected++;
+        packet.collected = true;
+        this.dataCollected += packet.type === 'kilobyte' ? 10 : 1;
         this.pendingCollectSound = true;
-        collisions.coins.push(coin);
+        collisions.coins.push(packet);
       }
     }
     
@@ -259,142 +265,122 @@ export class RunnerLevel2 {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    // Render background
     this.renderBackground(ctx);
     
-    // Render ground
-    ctx.fillStyle = "#8B4513";
+    // Render ground (circuit board style)
+    ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 370, 1000, 30);
     
-    // Ground pattern (brick-like)
-    ctx.strokeStyle = "#654321";
-    ctx.lineWidth = 2;
-    for (let x = 0; x < 1000; x += 40) {
-      ctx.strokeRect(x, 370, 40, 30);
+    // Circuit pattern
+    ctx.strokeStyle = "#00ff88";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < 1000; x += 30) {
+      ctx.beginPath();
+      ctx.moveTo(x, 370);
+      ctx.lineTo(x, 400);
+      ctx.stroke();
+      
+      // Horizontal lines
+      if (x % 60 === 0) {
+        ctx.beginPath();
+        ctx.moveTo(x, 385);
+        ctx.lineTo(x + 30, 385);
+        ctx.stroke();
+      }
     }
     
-    // Render coins
-    this.coins.forEach(coin => {
-      if (!coin.collected) {
-        ctx.fillStyle = "#FFD700";
-        ctx.beginPath();
-        ctx.arc(coin.position.x + 10, coin.position.y + 10, 10, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Shine effect
-        ctx.fillStyle = "#FFF";
-        ctx.beginPath();
-        ctx.arc(coin.position.x + 7, coin.position.y + 7, 3, 0, Math.PI * 2);
-        ctx.fill();
+    // Render data packets
+    this.dataPackets.forEach(packet => {
+      if (!packet.collected) {
+        if (packet.type === 'kilobyte') {
+          // Golden data packet
+          ctx.fillStyle = "#ffd700";
+          ctx.fillRect(packet.position.x, packet.position.y, 20, 20);
+          ctx.fillStyle = "#ffaa00";
+          ctx.font = "bold 12px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("KB", packet.position.x + 10, packet.position.y + 15);
+        } else {
+          // Blue byte
+          ctx.fillStyle = "#00ffff";
+          ctx.beginPath();
+          ctx.arc(packet.position.x + 10, packet.position.y + 10, 8, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Binary effect
+          ctx.fillStyle = "#003333";
+          ctx.font = "6px monospace";
+          ctx.fillText("01", packet.position.x + 5, packet.position.y + 12);
+        }
       }
     });
     
     // Render obstacles
     this.obstacles.forEach(obstacle => {
+      const glitchY = obstacle.glitchOffset || 0;
+      
       switch (obstacle.type) {
-        case 'pipe':
-          // Green pipe
-          ctx.fillStyle = "#2ECC40";
-          ctx.fillRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          
-          // Pipe rim
-          ctx.fillStyle = "#01FF70";
-          ctx.fillRect(
-            obstacle.position.x - 5,
-            obstacle.position.y,
-            obstacle.width + 10,
-            15
-          );
-          
-          // Pipe details
-          ctx.strokeStyle = "#1a8c28";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          break;
-          
-        case 'questionBlock':
-          // Yellow question block
-          ctx.fillStyle = "#F39C12";
-          ctx.fillRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          
-          // Question mark
-          ctx.fillStyle = "#FFF";
-          ctx.font = "bold 20px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText(
-            "?",
-            obstacle.position.x + obstacle.width / 2,
-            obstacle.position.y + obstacle.height / 2 + 7
-          );
-          
-          // Border
-          ctx.strokeStyle = "#D68910";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          break;
-          
-        case 'goomba':
-          // Brown goomba enemy
-          ctx.fillStyle = "#8B4513";
+        case 'virus':
+          // Red virus sphere with spikes
+          ctx.fillStyle = "#ff3333";
           ctx.beginPath();
           ctx.arc(
             obstacle.position.x + obstacle.width / 2,
-            obstacle.position.y + obstacle.height / 2,
-            obstacle.width / 2,
-            0,
-            Math.PI * 2
+            obstacle.position.y + obstacle.height / 2 + glitchY,
+            obstacle.width / 2 - 5,
+            0, Math.PI * 2
           );
           ctx.fill();
           
-          // Eyes
-          ctx.fillStyle = "#FFF";
-          ctx.beginPath();
-          ctx.arc(obstacle.position.x + 10, obstacle.position.y + 12, 4, 0, Math.PI * 2);
-          ctx.arc(obstacle.position.x + 20, obstacle.position.y + 12, 4, 0, Math.PI * 2);
-          ctx.fill();
+          // Virus spikes
+          ctx.strokeStyle = "#ff6666";
+          ctx.lineWidth = 3;
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + this.glitchTimer * 2;
+            const cx = obstacle.position.x + obstacle.width / 2;
+            const cy = obstacle.position.y + obstacle.height / 2 + glitchY;
+            const innerR = obstacle.width / 2 - 5;
+            const outerR = obstacle.width / 2 + 5;
+            ctx.beginPath();
+            ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
+            ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
+            ctx.stroke();
+          }
           
-          // Pupils
+          // Skull icon
           ctx.fillStyle = "#000";
-          ctx.beginPath();
-          ctx.arc(obstacle.position.x + 10, obstacle.position.y + 12, 2, 0, Math.PI * 2);
-          ctx.arc(obstacle.position.x + 20, obstacle.position.y + 12, 2, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Angry brow
-          ctx.strokeStyle = "#000";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(obstacle.position.x + 5, obstacle.position.y + 8);
-          ctx.lineTo(obstacle.position.x + 12, obstacle.position.y + 10);
-          ctx.moveTo(obstacle.position.x + 25, obstacle.position.y + 8);
-          ctx.lineTo(obstacle.position.x + 18, obstacle.position.y + 10);
-          ctx.stroke();
+          ctx.font = "16px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("☠", obstacle.position.x + obstacle.width / 2, obstacle.position.y + obstacle.height / 2 + 5);
           break;
           
-        case 'gap':
-          // Dark void
-          ctx.fillStyle = "#000";
+        case 'firewall':
+          // Orange/red firewall block
+          const gradient = ctx.createLinearGradient(
+            obstacle.position.x, obstacle.position.y,
+            obstacle.position.x, obstacle.position.y + obstacle.height
+          );
+          gradient.addColorStop(0, "#ff6600");
+          gradient.addColorStop(0.5, "#ff3300");
+          gradient.addColorStop(1, "#cc0000");
+          ctx.fillStyle = gradient;
           ctx.fillRect(
+            obstacle.position.x,
+            obstacle.position.y,
+            obstacle.width,
+            obstacle.height
+          );
+          
+          // Firewall icon
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 16px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("🔥", obstacle.position.x + obstacle.width / 2, obstacle.position.y + obstacle.height / 2 + 6);
+          
+          // Border
+          ctx.strokeStyle = "#ffaa00";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
             obstacle.position.x,
             obstacle.position.y,
             obstacle.width,
@@ -402,9 +388,9 @@ export class RunnerLevel2 {
           );
           break;
           
-        case 'bulletBill':
-          // Black bullet
-          ctx.fillStyle = "#1a1a1a";
+        case 'bug':
+          // Green computer bug
+          ctx.fillStyle = "#00cc00";
           ctx.beginPath();
           ctx.ellipse(
             obstacle.position.x + obstacle.width / 2,
@@ -415,75 +401,169 @@ export class RunnerLevel2 {
           );
           ctx.fill();
           
-          // White eyes
-          ctx.fillStyle = "#FFF";
+          // Bug legs
+          ctx.strokeStyle = "#006600";
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 3; i++) {
+            const legY = obstacle.position.y + 8 + i * 8;
+            ctx.beginPath();
+            ctx.moveTo(obstacle.position.x, legY);
+            ctx.lineTo(obstacle.position.x - 8, legY + 5);
+            ctx.moveTo(obstacle.position.x + obstacle.width, legY);
+            ctx.lineTo(obstacle.position.x + obstacle.width + 8, legY + 5);
+            ctx.stroke();
+          }
+          
+          // Bug eyes
+          ctx.fillStyle = "#ff0000";
           ctx.beginPath();
-          ctx.arc(obstacle.position.x + 35, obstacle.position.y + 10, 5, 0, Math.PI * 2);
-          ctx.arc(obstacle.position.x + 35, obstacle.position.y + 20, 5, 0, Math.PI * 2);
+          ctx.arc(obstacle.position.x + 10, obstacle.position.y + 10, 4, 0, Math.PI * 2);
+          ctx.arc(obstacle.position.x + 25, obstacle.position.y + 10, 4, 0, Math.PI * 2);
           ctx.fill();
           
-          // Red arm bands
-          ctx.fillStyle = "#E74C3C";
-          ctx.fillRect(obstacle.position.x + 5, obstacle.position.y + 5, 8, obstacle.height - 10);
+          // Antennae
+          ctx.strokeStyle = "#00cc00";
+          ctx.beginPath();
+          ctx.moveTo(obstacle.position.x + 10, obstacle.position.y);
+          ctx.lineTo(obstacle.position.x + 5, obstacle.position.y - 10);
+          ctx.moveTo(obstacle.position.x + 25, obstacle.position.y);
+          ctx.lineTo(obstacle.position.x + 30, obstacle.position.y - 10);
+          ctx.stroke();
           break;
           
-        case 'boo':
-          // White ghost body
-          ctx.fillStyle = "#FFF";
+        case 'gap':
+          // Digital void with matrix effect
+          ctx.fillStyle = "#000";
+          ctx.fillRect(
+            obstacle.position.x,
+            obstacle.position.y,
+            obstacle.width,
+            obstacle.height
+          );
+          
+          // Matrix rain effect
+          ctx.fillStyle = "#00ff00";
+          ctx.font = "10px monospace";
+          for (let i = 0; i < 3; i++) {
+            const charX = obstacle.position.x + 10 + i * 20;
+            for (let j = 0; j < 8; j++) {
+              const char = Math.random() > 0.5 ? "1" : "0";
+              ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+              ctx.fillText(char, charX, obstacle.position.y + 10 + j * 15);
+            }
+          }
+          ctx.globalAlpha = 1;
+          break;
+          
+        case 'malware':
+          // Purple malware blob
+          ctx.fillStyle = "#9900ff";
           ctx.beginPath();
-          ctx.arc(
+          ctx.ellipse(
             obstacle.position.x + obstacle.width / 2,
             obstacle.position.y + obstacle.height / 2,
             obstacle.width / 2,
-            0, Math.PI * 2
+            obstacle.height / 2,
+            0, 0, Math.PI * 2
           );
           ctx.fill();
           
-          // Ghost tail
-          ctx.beginPath();
-          ctx.moveTo(obstacle.position.x, obstacle.position.y + obstacle.height / 2);
-          ctx.quadraticCurveTo(
-            obstacle.position.x - 15, obstacle.position.y + obstacle.height,
-            obstacle.position.x + 10, obstacle.position.y + obstacle.height - 5
+          // Glitch effect lines
+          ctx.strokeStyle = "#ff00ff";
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 3; i++) {
+            const offsetY = Math.sin(this.glitchTimer * 15 + i) * 3;
+            ctx.beginPath();
+            ctx.moveTo(obstacle.position.x, obstacle.position.y + 10 + i * 10 + offsetY);
+            ctx.lineTo(obstacle.position.x + obstacle.width, obstacle.position.y + 10 + i * 10 + offsetY);
+            ctx.stroke();
+          }
+          
+          // Malware icon
+          ctx.fillStyle = "#fff";
+          ctx.font = "18px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("⚠", obstacle.position.x + obstacle.width / 2, obstacle.position.y + obstacle.height / 2 + 6);
+          break;
+          
+        case 'popup':
+          // Annoying popup window
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(
+            obstacle.position.x,
+            obstacle.position.y,
+            obstacle.width,
+            obstacle.height
           );
-          ctx.fill();
           
-          // Eyes
-          ctx.fillStyle = "#000";
-          ctx.beginPath();
-          ctx.arc(obstacle.position.x + 12, obstacle.position.y + 15, 5, 0, Math.PI * 2);
-          ctx.arc(obstacle.position.x + 28, obstacle.position.y + 15, 5, 0, Math.PI * 2);
-          ctx.fill();
+          // Title bar
+          ctx.fillStyle = "#0066cc";
+          ctx.fillRect(obstacle.position.x, obstacle.position.y, obstacle.width, 15);
           
-          // Tongue
-          ctx.fillStyle = "#E74C3C";
-          ctx.beginPath();
-          ctx.ellipse(obstacle.position.x + 20, obstacle.position.y + 30, 6, 4, 0, 0, Math.PI * 2);
-          ctx.fill();
+          // Close button
+          ctx.fillStyle = "#ff0000";
+          ctx.fillRect(obstacle.position.x + obstacle.width - 15, obstacle.position.y, 15, 15);
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 10px Arial";
+          ctx.fillText("X", obstacle.position.x + obstacle.width - 10, obstacle.position.y + 11);
+          
+          // Popup content
+          ctx.fillStyle = "#333";
+          ctx.font = "8px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("ERRO!", obstacle.position.x + obstacle.width / 2, obstacle.position.y + 30);
+          ctx.fillText("CLIQUE", obstacle.position.x + obstacle.width / 2, obstacle.position.y + 42);
+          
+          // Border
+          ctx.strokeStyle = "#333";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(obstacle.position.x, obstacle.position.y, obstacle.width, obstacle.height);
           break;
       }
     });
   }
 
   private renderBackground(ctx: CanvasRenderingContext2D) {
-    // Sky gradient (Mario-style blue)
+    // Dark digital background
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, "#5C94FC");
-    gradient.addColorStop(1, "#3A7BD5");
+    gradient.addColorStop(0, "#0a0a1a");
+    gradient.addColorStop(0.5, "#1a1a3a");
+    gradient.addColorStop(1, "#0d0d2a");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 1000, 400);
     
-    // Clouds
-    this.cloudPositions.forEach(cloud => {
-      ctx.fillStyle = "#FFF";
-      
-      // Cloud body
+    // Matrix-style glitch lines
+    ctx.strokeStyle = "#00ff8844";
+    ctx.lineWidth = 1;
+    this.glitchLines.forEach(line => {
       ctx.beginPath();
-      ctx.arc(cloud.x, cloud.y, 20, 0, Math.PI * 2);
-      ctx.arc(cloud.x + 25, cloud.y, 25, 0, Math.PI * 2);
-      ctx.arc(cloud.x + 50, cloud.y, 20, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(line.x, line.y);
+      ctx.lineTo(line.x + line.width, line.y);
+      ctx.stroke();
+      
+      // Random binary text
+      ctx.fillStyle = "#00ff8833";
+      ctx.font = "8px monospace";
+      const binary = Math.random() > 0.5 ? "10110" : "01001";
+      ctx.fillText(binary, line.x, line.y - 2);
     });
+    
+    // Scanlines effect
+    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+    for (let y = 0; y < 400; y += 4) {
+      ctx.fillRect(0, y, 1000, 2);
+    }
+    
+    // Random glitch rectangles
+    if (Math.random() > 0.95) {
+      ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, 0.1)`;
+      ctx.fillRect(
+        Math.random() * 800,
+        Math.random() * 300,
+        50 + Math.random() * 100,
+        10 + Math.random() * 30
+      );
+    }
   }
 
   getStartPosition() {
@@ -499,7 +579,7 @@ export class RunnerLevel2 {
   }
 
   getProgressPercentage() {
-    return Math.min((this.distanceTraveled / this.targetDistance) * 100, 100);
+    return Math.min(100, (this.distanceTraveled / this.targetDistance) * 100);
   }
 
   isComplete() {
@@ -507,6 +587,6 @@ export class RunnerLevel2 {
   }
 
   getCoinsCollected() {
-    return this.coinsCollected;
+    return this.dataCollected;
   }
 }
