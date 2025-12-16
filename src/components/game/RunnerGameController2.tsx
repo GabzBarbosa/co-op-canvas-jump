@@ -163,8 +163,8 @@ export class RunnerGameController2 {
   }
 
   private render() {
-    // Clear canvas
-    this.ctx.fillStyle = "#5C94FC";
+    // Clear canvas - dark digital theme
+    this.ctx.fillStyle = "#0a0a1a";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
     // Render level
@@ -212,14 +212,15 @@ export class RunnerGameController2 {
     // Chapter title
     this.ctx.font = "12px monospace";
     this.ctx.textAlign = "left";
-    this.ctx.fillText("CHAPTER 3: MARIO'S WORLD!", 20, 30);
+    this.ctx.fillStyle = "#00ff88";
+    this.ctx.fillText("CHAPTER 3: GLITCH DIGITAL", 20, 30);
     
-    // Coins collected
-    this.ctx.fillStyle = "#FFD700";
-    this.ctx.fillText(`🪙 ${this.level.getCoinsCollected()}`, 20, 50);
+    // Data collected
+    this.ctx.fillStyle = "#00ffff";
+    this.ctx.fillText(`💾 ${this.level.getCoinsCollected()} bytes`, 20, 50);
     
     // Controls reminder
-    this.ctx.fillStyle = "#FFFFFF";
+    this.ctx.fillStyle = "#00ff88";
     this.ctx.textAlign = "right";
     this.ctx.fillText("↑ PULAR (2x)  ↓ ABAIXAR", this.canvas.width - 20, 30);
   }
