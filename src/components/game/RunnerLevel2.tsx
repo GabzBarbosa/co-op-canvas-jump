@@ -1,6 +1,6 @@
 interface Obstacle {
   position: { x: number; y: number };
-  type: 'virus' | 'firewall' | 'bug' | 'glitch' | 'gap' | 'malware' | 'popup';
+  type: 'shark' | 'jellyfish' | 'coral' | 'octopus' | 'urchin' | 'anglerfish' | 'current';
   width: number;
   height: number;
   requiresJump: boolean;
@@ -8,24 +8,24 @@ interface Obstacle {
   glitchOffset?: number;
 }
 
-interface DataPacket {
+interface Collectible {
   position: { x: number; y: number };
   collected: boolean;
-  type: 'byte' | 'kilobyte';
+  type: 'shell' | 'pearl';
 }
 
 export class RunnerLevel2 {
   private obstacles: Obstacle[] = [];
-  private dataPackets: DataPacket[] = [];
+  private collectibles: Collectible[] = [];
   private scrollSpeed = 270;
   private distanceTraveled = 0;
   private targetDistance = 1300;
   private spawnTimer = 0;
   private spawnInterval = 2.0;
   private difficulty = 1;
-  private glitchLines: Array<{ x: number; y: number; width: number }> = [];
-  private dataCollected = 0;
-  private glitchTimer = 0;
+  private bubblePositions: Array<{ x: number; y: number; size: number; speed: number }> = [];
+  private collectiblesCount = 0;
+  private waveOffset = 0;
   
   public pendingCollectSound = false;
 
@@ -35,40 +35,38 @@ export class RunnerLevel2 {
 
   reset() {
     this.obstacles = [];
-    this.dataPackets = [];
+    this.collectibles = [];
     this.scrollSpeed = 270;
     this.distanceTraveled = 0;
     this.spawnTimer = 0;
     this.difficulty = 1;
-    this.dataCollected = 0;
-    this.glitchTimer = 0;
+    this.collectiblesCount = 0;
+    this.waveOffset = 0;
     
-    // Initialize glitch lines
-    this.glitchLines = [];
-    for (let i = 0; i < 8; i++) {
-      this.glitchLines.push({
+    this.bubblePositions = [];
+    for (let i = 0; i < 12; i++) {
+      this.bubblePositions.push({
         x: Math.random() * 1200,
-        y: Math.random() * 400,
-        width: 50 + Math.random() * 150
+        y: Math.random() * 350,
+        size: 3 + Math.random() * 8,
+        speed: 20 + Math.random() * 40
       });
     }
   }
 
   update(deltaTime: number) {
     this.distanceTraveled += (this.scrollSpeed * deltaTime) / 10;
-    this.glitchTimer += deltaTime;
+    this.waveOffset += deltaTime * 2;
     
     const speedIncrements = Math.floor(this.distanceTraveled / 50);
     this.scrollSpeed = 280 + (speedIncrements * 1.5);
     this.spawnInterval = Math.max(1.2, 2 - (speedIncrements * 0.04));
     
-    // Update obstacles with glitch effect
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
       this.obstacles[i].position.x -= this.scrollSpeed * deltaTime;
       
-      // Random glitch offset for some obstacles
-      if (this.obstacles[i].type === 'glitch') {
-        this.obstacles[i].glitchOffset = Math.sin(this.glitchTimer * 10) * 3;
+      if (this.obstacles[i].type === 'jellyfish') {
+        this.obstacles[i].position.y += Math.sin(Date.now() / 300 + i) * 1.5;
       }
       
       if (this.obstacles[i].position.x < -100) {
@@ -76,146 +74,131 @@ export class RunnerLevel2 {
       }
     }
     
-    // Update data packets
-    for (let i = this.dataPackets.length - 1; i >= 0; i--) {
-      this.dataPackets[i].position.x -= this.scrollSpeed * deltaTime;
-      
-      if (this.dataPackets[i].position.x < -50) {
-        this.dataPackets.splice(i, 1);
+    for (let i = this.collectibles.length - 1; i >= 0; i--) {
+      this.collectibles[i].position.x -= this.scrollSpeed * deltaTime;
+      if (this.collectibles[i].position.x < -50) {
+        this.collectibles.splice(i, 1);
       }
     }
     
-    // Update glitch lines
-    this.glitchLines.forEach(line => {
-      line.x -= this.scrollSpeed * deltaTime * 0.5;
-      if (line.x < -200) {
-        line.x = 1200;
-        line.y = Math.random() * 350;
-        line.width = 50 + Math.random() * 150;
+    // Update bubbles
+    this.bubblePositions.forEach(bubble => {
+      bubble.y -= bubble.speed * deltaTime;
+      bubble.x -= this.scrollSpeed * deltaTime * 0.2;
+      if (bubble.y < -20) {
+        bubble.y = 400;
+        bubble.x = Math.random() * 1200;
+      }
+      if (bubble.x < -20) {
+        bubble.x = 1200;
       }
     });
     
-    // Spawn new obstacles
     this.spawnTimer += deltaTime;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      this.spawnGlitchObstacle();
+      this.spawnOceanObstacle();
     }
   }
 
-  private spawnGlitchObstacle() {
+  private spawnOceanObstacle() {
     const rand = Math.random();
     const x = 1000;
     
-    if (rand < 0.25) {
-      // Spawn virus (ground obstacle - jump over)
-      const size = 35 + Math.random() * 15;
-      this.obstacles.push({
-        position: { x, y: 370 - size },
-        type: 'virus',
-        width: size,
-        height: size,
-        requiresJump: true,
-        requiresCrouch: false
-      });
-      
-      // Add data packets above
-      for (let i = 0; i < 3; i++) {
-        this.dataPackets.push({
-          position: { x: x + i * 25, y: 370 - size - 50 },
-          collected: false,
-          type: Math.random() > 0.7 ? 'kilobyte' : 'byte'
-        });
-      }
-    } else if (rand < 0.45) {
-      // Spawn firewall barriers
-      const barrierCount = 1 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < barrierCount; i++) {
-        this.obstacles.push({
-          position: { x: x + i * 45, y: 250 },
-          type: 'firewall',
-          width: 35,
-          height: 35,
-          requiresJump: false,
-          requiresCrouch: false
-        });
-        
-        this.dataPackets.push({
-          position: { x: x + i * 45 + 7, y: 215 },
-          collected: false,
-          type: 'kilobyte'
-        });
-      }
-    } else if (rand < 0.58) {
-      // Spawn bug (computer bug - ground enemy)
+    if (rand < 0.22) {
+      // Shark
       this.obstacles.push({
         position: { x, y: 340 },
-        type: 'bug',
-        width: 35,
+        type: 'shark',
+        width: 50,
         height: 30,
         requiresJump: true,
         requiresCrouch: false
       });
-    } else if (rand < 0.70) {
-      // Spawn malware (flying - crouch)
+      
+      // Shells above
+      for (let i = 0; i < 2; i++) {
+        this.collectibles.push({
+          position: { x: x + i * 25, y: 290 },
+          collected: false,
+          type: Math.random() > 0.7 ? 'pearl' : 'shell'
+        });
+      }
+    } else if (rand < 0.40) {
+      // Coral reef (multiple)
+      const count = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < count; i++) {
+        this.obstacles.push({
+          position: { x: x + i * 40, y: 345 },
+          type: 'coral',
+          width: 30,
+          height: 25,
+          requiresJump: true,
+          requiresCrouch: false
+        });
+      }
+      this.collectibles.push({
+        position: { x: x + 15, y: 305 },
+        collected: false,
+        type: 'pearl'
+      });
+    } else if (rand < 0.55) {
+      // Jellyfish (floating, crouch)
       this.obstacles.push({
-        position: { x, y: 315 },
-        type: 'malware',
-        width: 50,
+        position: { x, y: 310 },
+        type: 'jellyfish',
+        width: 30,
         height: 35,
         requiresJump: false,
         requiresCrouch: true
       });
-    } else if (rand < 0.82) {
-      // Spawn popup (annoying popup - crouch)
+    } else if (rand < 0.68) {
+      // Octopus tentacles (crouch)
       this.obstacles.push({
-        position: { x, y: 305 },
-        type: 'popup',
-        width: 60,
-        height: 50,
+        position: { x, y: 300 },
+        type: 'octopus',
+        width: 50,
+        height: 45,
         requiresJump: false,
         requiresCrouch: true
       });
-    } else if (rand < 0.90) {
-      // Spawn gap (system crash)
+    } else if (rand < 0.78) {
+      // Sea urchin (jump)
       this.obstacles.push({
-        position: { x, y: 370 },
-        type: 'gap',
-        width: 60 + Math.random() * 30,
-        height: 200,
+        position: { x, y: 350 },
+        type: 'urchin',
+        width: 25,
+        height: 25,
+        requiresJump: true,
+        requiresCrouch: false
+      });
+    } else if (rand < 0.88) {
+      // Anglerfish (ground)
+      this.obstacles.push({
+        position: { x, y: 335 },
+        type: 'anglerfish',
+        width: 45,
+        height: 35,
         requiresJump: true,
         requiresCrouch: false
       });
     } else {
-      // Combo: virus + bug + data
+      // Current (wide obstacle, crouch)
       this.obstacles.push({
-        position: { x, y: 320 },
-        type: 'virus',
-        width: 50,
-        height: 50,
-        requiresJump: true,
-        requiresCrouch: false
+        position: { x, y: 305 },
+        type: 'current',
+        width: 80,
+        height: 40,
+        requiresJump: false,
+        requiresCrouch: true
       });
       
-      this.obstacles.push({
-        position: { x: x + 120, y: 340 },
-        type: 'bug',
-        width: 35,
-        height: 30,
-        requiresJump: true,
-        requiresCrouch: false
-      });
-      
-      // Data packets in arc
-      for (let i = 0; i < 5; i++) {
-        const angle = (i / 4) * Math.PI;
-        this.dataPackets.push({
-          position: { 
-            x: x + 85 + Math.cos(angle) * 40, 
-            y: 290 - Math.sin(angle) * 60 
-          },
+      // Shells in arc
+      for (let i = 0; i < 3; i++) {
+        this.collectibles.push({
+          position: { x: x + 20 + i * 20, y: 260 },
           collected: false,
-          type: i === 2 ? 'kilobyte' : 'byte'
+          type: i === 1 ? 'pearl' : 'shell'
         });
       }
     }
@@ -224,7 +207,7 @@ export class RunnerLevel2 {
   getCollisions(playerBounds: any) {
     const collisions = {
       obstacles: [] as Obstacle[],
-      coins: [] as DataPacket[]
+      coins: [] as Collectible[]
     };
     
     for (const obstacle of this.obstacles) {
@@ -238,17 +221,17 @@ export class RunnerLevel2 {
       }
     }
     
-    for (const packet of this.dataPackets) {
-      if (!packet.collected && this.isColliding(playerBounds, {
-        x: packet.position.x,
-        y: packet.position.y,
+    for (const item of this.collectibles) {
+      if (!item.collected && this.isColliding(playerBounds, {
+        x: item.position.x,
+        y: item.position.y,
         width: 20,
         height: 20
       })) {
-        packet.collected = true;
-        this.dataCollected += packet.type === 'kilobyte' ? 10 : 1;
+        item.collected = true;
+        this.collectiblesCount += item.type === 'pearl' ? 10 : 1;
         this.pendingCollectSound = true;
-        collisions.coins.push(packet);
+        collisions.coins.push(item);
       }
     }
     
@@ -266,303 +249,322 @@ export class RunnerLevel2 {
 
   render(ctx: CanvasRenderingContext2D) {
     this.renderBackground(ctx);
+    this.renderGround(ctx);
     
-    // Render ground (circuit board style)
-    ctx.fillStyle = "#1a1a2e";
-    ctx.fillRect(0, 370, 1000, 30);
-    
-    // Circuit pattern
-    ctx.strokeStyle = "#00ff88";
-    ctx.lineWidth = 1;
-    for (let x = 0; x < 1000; x += 30) {
-      ctx.beginPath();
-      ctx.moveTo(x, 370);
-      ctx.lineTo(x, 400);
-      ctx.stroke();
-      
-      // Horizontal lines
-      if (x % 60 === 0) {
-        ctx.beginPath();
-        ctx.moveTo(x, 385);
-        ctx.lineTo(x + 30, 385);
-        ctx.stroke();
-      }
-    }
-    
-    // Render data packets
-    this.dataPackets.forEach(packet => {
-      if (!packet.collected) {
-        if (packet.type === 'kilobyte') {
-          // Golden data packet
-          ctx.fillStyle = "#ffd700";
-          ctx.fillRect(packet.position.x, packet.position.y, 20, 20);
-          ctx.fillStyle = "#ffaa00";
-          ctx.font = "bold 12px monospace";
-          ctx.textAlign = "center";
-          ctx.fillText("KB", packet.position.x + 10, packet.position.y + 15);
-        } else {
-          // Blue byte
-          ctx.fillStyle = "#00ffff";
+    // Render collectibles
+    this.collectibles.forEach(item => {
+      if (!item.collected) {
+        const bounce = Math.sin(Date.now() / 300) * 3;
+        if (item.type === 'pearl') {
+          ctx.fillStyle = "#FFF8DC";
           ctx.beginPath();
-          ctx.arc(packet.position.x + 10, packet.position.y + 10, 8, 0, Math.PI * 2);
+          ctx.arc(item.position.x + 10, item.position.y + 10 + bounce, 8, 0, Math.PI * 2);
           ctx.fill();
-          
-          // Binary effect
-          ctx.fillStyle = "#003333";
-          ctx.font = "6px monospace";
-          ctx.fillText("01", packet.position.x + 5, packet.position.y + 12);
+          ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+          ctx.beginPath();
+          ctx.arc(item.position.x + 7, item.position.y + 7 + bounce, 3, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "#DEB887";
+          ctx.beginPath();
+          ctx.arc(item.position.x + 10, item.position.y + 12 + bounce, 8, Math.PI, 0);
+          ctx.fill();
+          ctx.strokeStyle = "#8B7355";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            ctx.moveTo(item.position.x + 10, item.position.y + 12 + bounce);
+            const angle = Math.PI + (i / 4) * Math.PI;
+            ctx.lineTo(item.position.x + 10 + Math.cos(angle) * 8, item.position.y + 12 + bounce + Math.sin(angle) * 8);
+          }
+          ctx.stroke();
         }
       }
     });
     
     // Render obstacles
     this.obstacles.forEach(obstacle => {
-      const glitchY = obstacle.glitchOffset || 0;
-      
-      switch (obstacle.type) {
-        case 'virus':
-          // Red virus sphere with spikes
-          ctx.fillStyle = "#ff3333";
-          ctx.beginPath();
-          ctx.arc(
-            obstacle.position.x + obstacle.width / 2,
-            obstacle.position.y + obstacle.height / 2 + glitchY,
-            obstacle.width / 2 - 5,
-            0, Math.PI * 2
-          );
-          ctx.fill();
-          
-          // Virus spikes
-          ctx.strokeStyle = "#ff6666";
-          ctx.lineWidth = 3;
-          for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2 + this.glitchTimer * 2;
-            const cx = obstacle.position.x + obstacle.width / 2;
-            const cy = obstacle.position.y + obstacle.height / 2 + glitchY;
-            const innerR = obstacle.width / 2 - 5;
-            const outerR = obstacle.width / 2 + 5;
-            ctx.beginPath();
-            ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
-            ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
-            ctx.stroke();
-          }
-          
-          // Skull icon
-          ctx.fillStyle = "#000";
-          ctx.font = "16px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText("☠", obstacle.position.x + obstacle.width / 2, obstacle.position.y + obstacle.height / 2 + 5);
-          break;
-          
-        case 'firewall':
-          // Orange/red firewall block
-          const gradient = ctx.createLinearGradient(
-            obstacle.position.x, obstacle.position.y,
-            obstacle.position.x, obstacle.position.y + obstacle.height
-          );
-          gradient.addColorStop(0, "#ff6600");
-          gradient.addColorStop(0.5, "#ff3300");
-          gradient.addColorStop(1, "#cc0000");
-          ctx.fillStyle = gradient;
-          ctx.fillRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          
-          // Firewall icon
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 16px monospace";
-          ctx.textAlign = "center";
-          ctx.fillText("🔥", obstacle.position.x + obstacle.width / 2, obstacle.position.y + obstacle.height / 2 + 6);
-          
-          // Border
-          ctx.strokeStyle = "#ffaa00";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          break;
-          
-        case 'bug':
-          // Green computer bug
-          ctx.fillStyle = "#00cc00";
-          ctx.beginPath();
-          ctx.ellipse(
-            obstacle.position.x + obstacle.width / 2,
-            obstacle.position.y + obstacle.height / 2,
-            obstacle.width / 2,
-            obstacle.height / 2,
-            0, 0, Math.PI * 2
-          );
-          ctx.fill();
-          
-          // Bug legs
-          ctx.strokeStyle = "#006600";
-          ctx.lineWidth = 2;
-          for (let i = 0; i < 3; i++) {
-            const legY = obstacle.position.y + 8 + i * 8;
-            ctx.beginPath();
-            ctx.moveTo(obstacle.position.x, legY);
-            ctx.lineTo(obstacle.position.x - 8, legY + 5);
-            ctx.moveTo(obstacle.position.x + obstacle.width, legY);
-            ctx.lineTo(obstacle.position.x + obstacle.width + 8, legY + 5);
-            ctx.stroke();
-          }
-          
-          // Bug eyes
-          ctx.fillStyle = "#ff0000";
-          ctx.beginPath();
-          ctx.arc(obstacle.position.x + 10, obstacle.position.y + 10, 4, 0, Math.PI * 2);
-          ctx.arc(obstacle.position.x + 25, obstacle.position.y + 10, 4, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Antennae
-          ctx.strokeStyle = "#00cc00";
-          ctx.beginPath();
-          ctx.moveTo(obstacle.position.x + 10, obstacle.position.y);
-          ctx.lineTo(obstacle.position.x + 5, obstacle.position.y - 10);
-          ctx.moveTo(obstacle.position.x + 25, obstacle.position.y);
-          ctx.lineTo(obstacle.position.x + 30, obstacle.position.y - 10);
-          ctx.stroke();
-          break;
-          
-        case 'gap':
-          // Digital void with matrix effect
-          ctx.fillStyle = "#000";
-          ctx.fillRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          
-          // Matrix rain effect
-          ctx.fillStyle = "#00ff00";
-          ctx.font = "10px monospace";
-          for (let i = 0; i < 3; i++) {
-            const charX = obstacle.position.x + 10 + i * 20;
-            for (let j = 0; j < 8; j++) {
-              const char = Math.random() > 0.5 ? "1" : "0";
-              ctx.globalAlpha = Math.random() * 0.5 + 0.3;
-              ctx.fillText(char, charX, obstacle.position.y + 10 + j * 15);
-            }
-          }
-          ctx.globalAlpha = 1;
-          break;
-          
-        case 'malware':
-          // Purple malware blob
-          ctx.fillStyle = "#9900ff";
-          ctx.beginPath();
-          ctx.ellipse(
-            obstacle.position.x + obstacle.width / 2,
-            obstacle.position.y + obstacle.height / 2,
-            obstacle.width / 2,
-            obstacle.height / 2,
-            0, 0, Math.PI * 2
-          );
-          ctx.fill();
-          
-          // Glitch effect lines
-          ctx.strokeStyle = "#ff00ff";
-          ctx.lineWidth = 2;
-          for (let i = 0; i < 3; i++) {
-            const offsetY = Math.sin(this.glitchTimer * 15 + i) * 3;
-            ctx.beginPath();
-            ctx.moveTo(obstacle.position.x, obstacle.position.y + 10 + i * 10 + offsetY);
-            ctx.lineTo(obstacle.position.x + obstacle.width, obstacle.position.y + 10 + i * 10 + offsetY);
-            ctx.stroke();
-          }
-          
-          // Malware icon
-          ctx.fillStyle = "#fff";
-          ctx.font = "18px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText("⚠", obstacle.position.x + obstacle.width / 2, obstacle.position.y + obstacle.height / 2 + 6);
-          break;
-          
-        case 'popup':
-          // Annoying popup window
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(
-            obstacle.position.x,
-            obstacle.position.y,
-            obstacle.width,
-            obstacle.height
-          );
-          
-          // Title bar
-          ctx.fillStyle = "#0066cc";
-          ctx.fillRect(obstacle.position.x, obstacle.position.y, obstacle.width, 15);
-          
-          // Close button
-          ctx.fillStyle = "#ff0000";
-          ctx.fillRect(obstacle.position.x + obstacle.width - 15, obstacle.position.y, 15, 15);
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 10px Arial";
-          ctx.fillText("X", obstacle.position.x + obstacle.width - 10, obstacle.position.y + 11);
-          
-          // Popup content
-          ctx.fillStyle = "#333";
-          ctx.font = "8px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText("ERRO!", obstacle.position.x + obstacle.width / 2, obstacle.position.y + 30);
-          ctx.fillText("CLIQUE", obstacle.position.x + obstacle.width / 2, obstacle.position.y + 42);
-          
-          // Border
-          ctx.strokeStyle = "#333";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(obstacle.position.x, obstacle.position.y, obstacle.width, obstacle.height);
-          break;
-      }
+      this.renderObstacle(ctx, obstacle);
     });
   }
 
   private renderBackground(ctx: CanvasRenderingContext2D) {
-    // Dark digital background
+    // Deep ocean gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, "#0a0a1a");
-    gradient.addColorStop(0.5, "#1a1a3a");
-    gradient.addColorStop(1, "#0d0d2a");
+    gradient.addColorStop(0, "#001a33");
+    gradient.addColorStop(0.3, "#003366");
+    gradient.addColorStop(0.7, "#004080");
+    gradient.addColorStop(1, "#002244");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 1000, 400);
     
-    // Matrix-style glitch lines
-    ctx.strokeStyle = "#00ff8844";
-    ctx.lineWidth = 1;
-    this.glitchLines.forEach(line => {
+    // Light rays from surface
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    for (let i = 0; i < 5; i++) {
+      const rayX = 100 + i * 200 + Math.sin(this.waveOffset + i) * 30;
+      ctx.fillStyle = "#87CEEB";
       ctx.beginPath();
-      ctx.moveTo(line.x, line.y);
-      ctx.lineTo(line.x + line.width, line.y);
-      ctx.stroke();
-      
-      // Random binary text
-      ctx.fillStyle = "#00ff8833";
-      ctx.font = "8px monospace";
-      const binary = Math.random() > 0.5 ? "10110" : "01001";
-      ctx.fillText(binary, line.x, line.y - 2);
+      ctx.moveTo(rayX - 20, 0);
+      ctx.lineTo(rayX + 20, 0);
+      ctx.lineTo(rayX + 60, 400);
+      ctx.lineTo(rayX - 60, 400);
+      ctx.fill();
+    }
+    ctx.restore();
+    
+    // Bubbles
+    ctx.fillStyle = "rgba(150, 220, 255, 0.3)";
+    this.bubblePositions.forEach(bubble => {
+      ctx.beginPath();
+      ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
+      ctx.fill();
+      // Bubble highlight
+      ctx.fillStyle = "rgba(200, 240, 255, 0.4)";
+      ctx.beginPath();
+      ctx.arc(bubble.x - 1, bubble.y - 1, bubble.size * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(150, 220, 255, 0.3)";
     });
     
-    // Scanlines effect
-    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-    for (let y = 0; y < 400; y += 4) {
-      ctx.fillRect(0, y, 1000, 2);
+    // Seaweed in background
+    ctx.fillStyle = "#006633";
+    for (let i = 0; i < 6; i++) {
+      const swayX = i * 180 + 50;
+      const sway = Math.sin(this.waveOffset + i * 0.5) * 8;
+      ctx.beginPath();
+      ctx.moveTo(swayX, 400);
+      ctx.quadraticCurveTo(swayX + sway, 350, swayX + sway * 0.5, 310);
+      ctx.quadraticCurveTo(swayX - sway * 0.3, 340, swayX, 400);
+      ctx.fill();
+    }
+  }
+
+  private renderGround(ctx: CanvasRenderingContext2D) {
+    // Sandy ocean floor
+    ctx.fillStyle = "#C2B280";
+    ctx.fillRect(0, 370, 1000, 30);
+    
+    // Sand ripples
+    ctx.fillStyle = "#B8A870";
+    for (let x = 0; x < 1000; x += 25) {
+      const rippleY = 375 + Math.sin(x * 0.1 + this.waveOffset) * 2;
+      ctx.fillRect(x, rippleY, 15, 3);
     }
     
-    // Random glitch rectangles
-    if (Math.random() > 0.95) {
-      ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, 0.1)`;
-      ctx.fillRect(
-        Math.random() * 800,
-        Math.random() * 300,
-        50 + Math.random() * 100,
-        10 + Math.random() * 30
-      );
+    // Small rocks
+    ctx.fillStyle = "#8B7355";
+    for (let x = 30; x < 1000; x += 120) {
+      ctx.beginPath();
+      ctx.ellipse(x, 380, 8, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  private renderObstacle(ctx: CanvasRenderingContext2D, obstacle: Obstacle) {
+    const x = obstacle.position.x;
+    const y = obstacle.position.y;
+    
+    switch (obstacle.type) {
+      case 'shark':
+        // Shark body
+        ctx.fillStyle = "#708090";
+        ctx.beginPath();
+        ctx.ellipse(x + 25, y + 15, 25, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Dorsal fin
+        ctx.beginPath();
+        ctx.moveTo(x + 20, y + 5);
+        ctx.lineTo(x + 25, y - 10);
+        ctx.lineTo(x + 35, y + 5);
+        ctx.fill();
+        // Tail
+        ctx.beginPath();
+        ctx.moveTo(x, y + 10);
+        ctx.lineTo(x - 10, y);
+        ctx.lineTo(x - 5, y + 15);
+        ctx.lineTo(x - 10, y + 25);
+        ctx.lineTo(x, y + 20);
+        ctx.fill();
+        // White belly
+        ctx.fillStyle = "#D3D3D3";
+        ctx.beginPath();
+        ctx.ellipse(x + 25, y + 20, 20, 6, 0, 0, Math.PI);
+        ctx.fill();
+        // Eye
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + 38, y + 12, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#FFF";
+        ctx.beginPath();
+        ctx.arc(x + 37, y + 11, 1, 0, Math.PI * 2);
+        ctx.fill();
+        // Teeth
+        ctx.fillStyle = "#FFF";
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          ctx.moveTo(x + 40 + i * 3, y + 18);
+          ctx.lineTo(x + 41.5 + i * 3, y + 22);
+          ctx.lineTo(x + 43 + i * 3, y + 18);
+        }
+        ctx.fill();
+        break;
+        
+      case 'jellyfish':
+        // Bell
+        const pulse = 1 + Math.sin(Date.now() / 200) * 0.1;
+        ctx.fillStyle = "rgba(200, 100, 255, 0.6)";
+        ctx.beginPath();
+        ctx.ellipse(x + 15, y + 10, 14 * pulse, 10 * pulse, 0, 0, Math.PI);
+        ctx.fill();
+        // Inner glow
+        ctx.fillStyle = "rgba(255, 150, 255, 0.4)";
+        ctx.beginPath();
+        ctx.ellipse(x + 15, y + 8, 8, 6, 0, 0, Math.PI);
+        ctx.fill();
+        // Tentacles
+        ctx.strokeStyle = "rgba(200, 100, 255, 0.5)";
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+          const tentX = x + 5 + i * 5;
+          ctx.beginPath();
+          ctx.moveTo(tentX, y + 15);
+          ctx.quadraticCurveTo(tentX + Math.sin(Date.now() / 200 + i) * 3, y + 25, tentX, y + 35);
+          ctx.stroke();
+        }
+        break;
+        
+      case 'coral':
+        // Coral branches
+        const colors = ['#FF6B6B', '#FF8E8E', '#FF4757'];
+        colors.forEach((color, i) => {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(x + 5 + i * 8, y + obstacle.height);
+          ctx.lineTo(x + 5 + i * 8 - 3, y + 5 + i * 3);
+          ctx.lineTo(x + 5 + i * 8 + 6, y + 5 + i * 3);
+          ctx.fill();
+          // Coral bumps
+          ctx.beginPath();
+          ctx.arc(x + 5 + i * 8, y + 5 + i * 3, 4, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        break;
+        
+      case 'octopus':
+        // Body
+        ctx.fillStyle = "#9B59B6";
+        ctx.beginPath();
+        ctx.ellipse(x + 25, y + 15, 18, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Eyes
+        ctx.fillStyle = "#FFF";
+        ctx.beginPath();
+        ctx.arc(x + 18, y + 12, 5, 0, Math.PI * 2);
+        ctx.arc(x + 32, y + 12, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + 19, y + 13, 2, 0, Math.PI * 2);
+        ctx.arc(x + 33, y + 13, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Tentacles
+        ctx.strokeStyle = "#8E44AD";
+        ctx.lineWidth = 3;
+        for (let i = 0; i < 6; i++) {
+          const tentX = x + 8 + i * 7;
+          const wave = Math.sin(Date.now() / 150 + i) * 5;
+          ctx.beginPath();
+          ctx.moveTo(tentX, y + 25);
+          ctx.quadraticCurveTo(tentX + wave, y + 35, tentX - wave, y + 45);
+          ctx.stroke();
+        }
+        break;
+        
+      case 'urchin':
+        // Black round body
+        ctx.fillStyle = "#1a1a2e";
+        ctx.beginPath();
+        ctx.arc(x + 12, y + 12, 10, 0, Math.PI * 2);
+        ctx.fill();
+        // Spines
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(x + 12 + Math.cos(angle) * 8, y + 12 + Math.sin(angle) * 8);
+          ctx.lineTo(x + 12 + Math.cos(angle) * 14, y + 12 + Math.sin(angle) * 14);
+          ctx.stroke();
+        }
+        break;
+        
+      case 'anglerfish':
+        // Dark body
+        ctx.fillStyle = "#2d1b4e";
+        ctx.beginPath();
+        ctx.ellipse(x + 22, y + 18, 20, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Big mouth
+        ctx.fillStyle = "#1a0a2e";
+        ctx.beginPath();
+        ctx.arc(x + 38, y + 20, 8, -0.5, 0.5);
+        ctx.fill();
+        // Teeth
+        ctx.fillStyle = "#FFF";
+        for (let i = 0; i < 3; i++) {
+          ctx.fillRect(x + 35, y + 15 + i * 4, 2, 3);
+          ctx.fillRect(x + 38, y + 16 + i * 4, 2, 3);
+        }
+        // Lure (glowing)
+        const glow = 0.5 + Math.sin(Date.now() / 100) * 0.5;
+        ctx.fillStyle = `rgba(0, 255, 200, ${glow})`;
+        ctx.beginPath();
+        ctx.arc(x + 15, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Lure stalk
+        ctx.strokeStyle = "#4a2c7a";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + 15, y + 5);
+        ctx.quadraticCurveTo(x + 10, y + 10, x + 15, y + 15);
+        ctx.stroke();
+        // Eye
+        ctx.fillStyle = "#FFD700";
+        ctx.beginPath();
+        ctx.arc(x + 30, y + 14, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + 31, y + 14, 2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+        
+      case 'current':
+        // Water current effect
+        ctx.save();
+        ctx.globalAlpha = 0.4;
+        const streamGrad = ctx.createLinearGradient(x, y, x + obstacle.width, y);
+        streamGrad.addColorStop(0, "rgba(0, 150, 255, 0)");
+        streamGrad.addColorStop(0.5, "rgba(0, 150, 255, 0.6)");
+        streamGrad.addColorStop(1, "rgba(0, 150, 255, 0)");
+        ctx.fillStyle = streamGrad;
+        ctx.fillRect(x, y, obstacle.width, obstacle.height);
+        
+        // Stream lines
+        ctx.strokeStyle = "rgba(100, 200, 255, 0.5)";
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 4; i++) {
+          const lineY = y + 8 + i * 10;
+          const wave = Math.sin(Date.now() / 100 + i) * 5;
+          ctx.beginPath();
+          ctx.moveTo(x, lineY);
+          ctx.quadraticCurveTo(x + obstacle.width / 2, lineY + wave, x + obstacle.width, lineY);
+          ctx.stroke();
+        }
+        ctx.restore();
+        break;
     }
   }
 
@@ -587,6 +589,10 @@ export class RunnerLevel2 {
   }
 
   getCoinsCollected() {
-    return this.dataCollected;
+    return this.collectiblesCount;
+  }
+
+  getDifficulty() {
+    return this.difficulty;
   }
 }
