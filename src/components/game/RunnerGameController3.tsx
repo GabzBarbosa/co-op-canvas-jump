@@ -238,10 +238,10 @@ export class RunnerGameController3 {
     this.ctx.textAlign = "right";
     this.ctx.fillText("↑ PULAR (2x)  ↓ ABAIXAR", this.canvas.width - 20, 30);
     
-    // Warning for bombs
-    this.ctx.fillStyle = "#ff6b35";
+    // Warning
+    this.ctx.fillStyle = "#87CEEB";
     this.ctx.font = "10px monospace";
-    this.ctx.fillText("💣 CUIDADO COM AS BOMBAS!", this.canvas.width - 20, 50);
+    this.ctx.fillText("❄️ CUIDADO COM O GELO!", this.canvas.width - 20, 50);
   }
 
   restartLevel() {
