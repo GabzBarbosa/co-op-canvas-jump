@@ -231,7 +231,7 @@ export class RunnerGameController3 {
     
     // Powerups collected
     this.ctx.fillStyle = "#ff6b35";
-    this.ctx.fillText(`⚡ ${this.level.getPowerupsCollected()}`, 20, 70);
+    this.ctx.fillText(`🐟 ${this.level.getPowerupsCollected()}`, 20, 70);
     
     // Controls reminder
     this.ctx.fillStyle = "#FFFFFF";
