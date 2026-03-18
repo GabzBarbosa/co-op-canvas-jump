@@ -159,15 +159,15 @@ export class RunnerGameController5 {
     // Handle powerup collisions
     for (const powerup of collisions.powerups) {
       switch (powerup.type) {
-        case 'star':
+        case 'banana':
           this.shieldActive = true;
           this.shieldTimer = 5;
           break;
-        case 'mushroom':
+        case 'coconut':
           this.speedBoostActive = true;
           this.speedBoostTimer = 3;
           break;
-        case 'heart':
+        case 'flower':
           this.playerHealth = Math.min(5, this.playerHealth + 1);
           break;
       }
