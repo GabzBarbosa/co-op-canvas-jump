@@ -245,15 +245,15 @@ export class RunnerGameController4 {
   private renderHUD() {
     // Theme indicator
     const theme = this.level.getCurrentTheme();
-    let themeColor = "#228B22";
-    let themeName = "FLORESTA";
+    let themeColor = "#DAA520";
+    let themeName = "SAVANA";
     
     if (theme === 'mario') {
-      themeColor = "#5C94FC";
-      themeName = "MARIO WORLD";
+      themeColor = "#00BFFF";
+      themeName = "OCEANO";
     } else if (theme === 'bomberman') {
-      themeColor = "#FF6B35";
-      themeName = "BOMBERMAN";
+      themeColor = "#87CEEB";
+      themeName = "ÁRTICO";
     }
     
     this.ctx.fillStyle = themeColor;
