@@ -222,7 +222,7 @@ export class RunnerGameController3 {
     // Chapter title
     this.ctx.font = "12px monospace";
     this.ctx.textAlign = "left";
-    this.ctx.fillText("CHAPTER 4: BOMBERMAN'S ARENA!", 20, 30);
+    this.ctx.fillText("CHAPTER 4: 🐻‍❄️ ÁRTICO CONGELANTE", 20, 30);
     
     // Difficulty indicator
     const difficulty = this.level.getDifficulty();
