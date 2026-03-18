@@ -9,8 +9,8 @@ export class Boss {
   public isDefeated: boolean = false;
   
   private attackTimer: number = 0;
-  private attackCooldown: number = 3; // 3 seconds between attacks
-  private currentPhase: number = 1; // 1, 2, or 3
+  private attackCooldown: number = 3;
+  private currentPhase: number = 1;
   private projectiles: Projectile[] = [];
   private lastShockwaveTime: number = 0;
   private animationOffset: number = 0;
@@ -22,7 +22,6 @@ export class Boss {
   update(deltaTime: number) {
     if (this.isDefeated) return;
 
-    // Update phase based on health
     if (this.currentHealth > 70) {
       this.currentPhase = 1;
     } else if (this.currentHealth > 40) {
@@ -31,11 +30,9 @@ export class Boss {
       this.currentPhase = 3;
     }
 
-    // Update attack timer
     this.attackTimer += deltaTime;
     this.animationOffset += deltaTime;
 
-    // Attack based on phase
     const attackInterval = this.currentPhase === 3 ? 1.5 : this.attackCooldown;
     
     if (this.attackTimer >= attackInterval) {
@@ -43,13 +40,11 @@ export class Boss {
       this.attackTimer = 0;
     }
 
-    // Update projectiles
     this.projectiles = this.projectiles.filter(projectile => {
       projectile.update(deltaTime);
       return !projectile.shouldDestroy();
     });
 
-    // Check if defeated
     if (this.currentHealth <= 0 && !this.isDefeated) {
       this.isDefeated = true;
     }
@@ -60,25 +55,17 @@ export class Boss {
     
     switch (this.currentPhase) {
       case 1:
-        // Phase 1: Slow projectiles
-        this.shootProjectiles(80, 3); // 80px/s speed, 3 projectiles
+        this.shootProjectiles(80, 3);
         break;
-        
       case 2:
-        // Phase 2: Fast projectiles + ground waves
-        this.shootProjectiles(120, 5); // 120px/s speed, 5 projectiles
-        
-        // Add shockwave every other attack
+        this.shootProjectiles(120, 5);
         if (currentTime - this.lastShockwaveTime > 6000) {
           this.createShockwave();
           this.lastShockwaveTime = currentTime;
         }
         break;
-        
       case 3:
-        // Phase 3: Very fast projectiles + frequent shockwaves
-        this.shootProjectiles(160, 7); // 160px/s speed, 7 projectiles
-        
+        this.shootProjectiles(160, 7);
         if (currentTime - this.lastShockwaveTime > 3000) {
           this.createShockwave();
           this.lastShockwaveTime = currentTime;
@@ -107,27 +94,15 @@ export class Boss {
   }
 
   private createShockwave() {
-    // Create ground-level projectiles that move horizontally
-    const groundY = 370; // Just above the floor
-    
-    // Left-moving shockwave
-    this.projectiles.push(new Projectile(
-      400, groundY, -150, 0, "shockwave"
-    ));
-    
-    // Right-moving shockwave
-    this.projectiles.push(new Projectile(
-      400, groundY, 150, 0, "shockwave"
-    ));
+    const groundY = 370;
+    this.projectiles.push(new Projectile(400, groundY, -150, 0, "shockwave"));
+    this.projectiles.push(new Projectile(400, groundY, 150, 0, "shockwave"));
   }
 
   takeDamage(damage: number) {
     if (this.isDefeated) return;
-    
     this.currentHealth = Math.max(0, this.currentHealth - damage);
-    
-    // Visual damage feedback
-    this.animationOffset = 0; // Reset animation for damage flash
+    this.animationOffset = 0;
   }
 
   getProjectiles(): Projectile[] {
@@ -157,69 +132,152 @@ export class Boss {
       return;
     }
 
-    const centerX = this.position.x + this.width / 2;
-    const centerY = this.position.y + this.height / 2;
+    const x = this.position.x;
+    const y = this.position.y;
+    const w = this.width;
+    const h = this.height;
     
-    // Boss body with phase-based colors
-    let primaryColor = "#8E44AD"; // Purple
-    let secondaryColor = "#9B59B6";
-    
-    if (this.currentPhase === 2) {
-      primaryColor = "#E74C3C"; // Red
-      secondaryColor = "#C0392B";
-    } else if (this.currentPhase === 3) {
-      primaryColor = "#2C3E50"; // Dark blue/black
-      secondaryColor = "#34495E";
-    }
-    
-    // Damage flash effect
+    // Damage flash
     const flashIntensity = Math.max(0, 1 - (this.animationOffset * 10));
-    if (flashIntensity > 0) {
-      primaryColor = "#FFFFFF";
-      secondaryColor = "#F8F8F8";
-    }
-    
-    // Main body - large imposing rectangle
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-    
-    // Body details
-    ctx.fillStyle = secondaryColor;
-    ctx.fillRect(this.position.x + 16, this.position.y + 16, this.width - 32, this.height - 32);
-    
-    // Eyes - menacing red glow
-    const eyeGlow = Math.sin(this.animationOffset * 4) * 0.3 + 0.7;
-    ctx.fillStyle = `rgba(255, 0, 0, ${eyeGlow})`;
-    ctx.fillRect(this.position.x + 32, this.position.y + 40, 16, 16);
-    ctx.fillRect(this.position.x + 80, this.position.y + 40, 16, 16);
     
     // Floating animation
-    const floatOffset = Math.sin(this.animationOffset * 2) * 4;
+    const floatOffset = Math.sin(this.animationOffset * 2) * 6;
+    
     ctx.save();
     ctx.translate(0, floatOffset);
     
-    // Phase indicators (spikes/decorations based on phase)
-    ctx.fillStyle = "#FF6B6B";
-    for (let i = 0; i < this.currentPhase; i++) {
-      const spikeX = this.position.x + 20 + (i * 30);
-      const spikeY = this.position.y - 8;
-      
-      // Draw spike
-      ctx.fillRect(spikeX, spikeY, 8, 16);
-      ctx.fillRect(spikeX + 2, spikeY - 4, 4, 8);
+    if (flashIntensity > 0) {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(x, y, w, h);
+      ctx.restore();
+      this.projectiles.forEach(p => p.render(ctx));
+      return;
     }
+    
+    // Dragon Anciã Boss - Large dragon
+    // Body
+    ctx.fillStyle = this.currentPhase === 1 ? "#8B0000" : 
+                    this.currentPhase === 2 ? "#B22222" : "#FF4500";
+    ctx.fillRect(x + 20, y + 30, w - 40, h - 50);
+    
+    // Scales
+    ctx.fillStyle = this.currentPhase === 1 ? "#660000" : 
+                    this.currentPhase === 2 ? "#8B0000" : "#CC3300";
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 3; j++) {
+        ctx.fillRect(x + 30 + i * 18, y + 40 + j * 20, 10, 10);
+      }
+    }
+    
+    // Head
+    ctx.fillStyle = this.currentPhase === 1 ? "#8B0000" : 
+                    this.currentPhase === 2 ? "#B22222" : "#FF4500";
+    ctx.fillRect(x + 10, y + 10, 50, 40);
+    // Snout
+    ctx.fillRect(x, y + 20, 20, 20);
+    
+    // Horns
+    ctx.fillStyle = "#DAA520";
+    ctx.beginPath();
+    ctx.moveTo(x + 15, y + 10);
+    ctx.lineTo(x + 10, y - 15);
+    ctx.lineTo(x + 25, y + 10);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 40, y + 10);
+    ctx.lineTo(x + 45, y - 15);
+    ctx.lineTo(x + 55, y + 10);
+    ctx.fill();
+    
+    // Eyes - menacing
+    const eyeGlow = Math.sin(this.animationOffset * 4) * 0.3 + 0.7;
+    ctx.fillStyle = `rgba(255, 255, 0, ${eyeGlow})`;
+    ctx.fillRect(x + 20, y + 20, 12, 10);
+    ctx.fillRect(x + 40, y + 20, 12, 10);
+    // Slit pupils
+    ctx.fillStyle = "#000";
+    ctx.fillRect(x + 25, y + 20, 3, 10);
+    ctx.fillRect(x + 45, y + 20, 3, 10);
+    
+    // Nostrils with fire
+    ctx.fillStyle = "#FF6600";
+    const fireFlicker = Math.sin(this.animationOffset * 10) * 3;
+    ctx.beginPath();
+    ctx.arc(x + 5, y + 25, 4 + fireFlicker, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + 5, y + 35, 4 + fireFlicker, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Wings
+    ctx.fillStyle = this.currentPhase === 1 ? "#660000" : 
+                    this.currentPhase === 2 ? "#8B0000" : "#CC3300";
+    const wingFlap = Math.sin(this.animationOffset * 3) * 10;
+    // Left wing
+    ctx.beginPath();
+    ctx.moveTo(x + w - 20, y + 30);
+    ctx.lineTo(x + w + 20, y + 10 + wingFlap);
+    ctx.lineTo(x + w + 30, y + 30 + wingFlap);
+    ctx.lineTo(x + w + 15, y + 50);
+    ctx.lineTo(x + w - 20, y + 60);
+    ctx.fill();
+    // Wing membrane
+    ctx.fillStyle = this.currentPhase === 1 ? "#8B0000" : 
+                    this.currentPhase === 2 ? "#B22222" : "#FF6600";
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x + w - 10, y + 35);
+    ctx.lineTo(x + w + 15, y + 15 + wingFlap);
+    ctx.lineTo(x + w + 10, y + 50);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    
+    // Tail
+    ctx.fillStyle = this.currentPhase === 1 ? "#8B0000" : 
+                    this.currentPhase === 2 ? "#B22222" : "#FF4500";
+    const tailWag = Math.sin(this.animationOffset * 4) * 8;
+    ctx.fillRect(x + w - 30, y + h - 30, 40, 10);
+    ctx.fillRect(x + w - 10, y + h - 35 + tailWag, 30, 10);
+    // Tail spike
+    ctx.fillStyle = "#DAA520";
+    ctx.beginPath();
+    ctx.moveTo(x + w + 20, y + h - 35 + tailWag);
+    ctx.lineTo(x + w + 35, y + h - 30 + tailWag);
+    ctx.lineTo(x + w + 20, y + h - 25 + tailWag);
+    ctx.fill();
+    
+    // Spinal spikes based on phase
+    ctx.fillStyle = "#DAA520";
+    for (let i = 0; i < this.currentPhase + 2; i++) {
+      const spikeX = x + 25 + (i * 20);
+      ctx.beginPath();
+      ctx.moveTo(spikeX, y + 30);
+      ctx.lineTo(spikeX + 5, y + 15);
+      ctx.lineTo(spikeX + 10, y + 30);
+      ctx.fill();
+    }
+    
+    // Legs/claws
+    ctx.fillStyle = this.currentPhase === 1 ? "#8B0000" : 
+                    this.currentPhase === 2 ? "#B22222" : "#FF4500";
+    ctx.fillRect(x + 25, y + h - 25, 15, 20);
+    ctx.fillRect(x + w - 55, y + h - 25, 15, 20);
+    // Claws
+    ctx.fillStyle = "#DAA520";
+    ctx.fillRect(x + 25, y + h - 8, 4, 4);
+    ctx.fillRect(x + 32, y + h - 8, 4, 4);
+    ctx.fillRect(x + w - 55, y + h - 8, 4, 4);
+    ctx.fillRect(x + w - 48, y + h - 8, 4, 4);
     
     ctx.restore();
     
-    // Render all projectiles
+    // Render projectiles
     this.projectiles.forEach(projectile => {
       projectile.render(ctx);
     });
   }
 
   private renderDefeatAnimation(ctx: CanvasRenderingContext2D) {
-    // Dramatic defeat animation with explosion effect
-    const time = Date.now() / 100;
     const alpha = Math.max(0, 1 - (this.animationOffset * 2));
     
     if (alpha > 0) {
@@ -236,7 +294,8 @@ export class Boss {
         ctx.fillRect(x - 4, y - 4, 8, 8);
       }
       
-      // Flash effect
+      // Flash
+      const time = Date.now() / 100;
       if (Math.sin(time) > 0) {
         ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
         ctx.fillRect(0, 0, 800, 450);

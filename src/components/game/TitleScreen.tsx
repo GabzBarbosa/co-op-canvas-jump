@@ -77,10 +77,10 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     <div className="flex flex-col items-center justify-center min-h-screen text-center pixel-perfect">
       <div className="mb-8">
         <h1 className={`text-6xl font-bold mb-4 ${showVictory ? 'animate-victory-glow text-game-goal' : 'text-primary'}`}>
-          MALDITOS PIXELS
+          🐯 MALDITOS PIXELS 🐲
         </h1>
         <p className="text-xl text-muted-foreground">
-          {showVictory ? "🎉 Parabéns! Vocês conseguiram não morrer! 🎉" : "Um Jogo Onde a Amizade Vai pro Espaço"}
+          {showVictory ? "🎉 O Tigre e o Dragão venceram! 🎉" : "Tigre & Dragão vs. o Reino Animal"}
         </p>
       </div>
 
@@ -117,13 +117,13 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         {/* Level Selection - Only for platformer mode */}
         {selectedMode === 'platformer' && (
           <div className="mb-6 text-center">
-            <h3 className="text-lg font-bold mb-4 text-primary">Escolha Sua Fase do Sofrimento</h3>
+            <h3 className="text-lg font-bold mb-4 text-primary">Escolha Seu Bioma</h3>
             <div className="flex justify-center gap-2 mb-6 flex-wrap">
               {[
-                { level: 1, name: 'Aquecimento', desc: 'Para iniciantes' },
-                { level: 2, name: 'Adaptativo', desc: 'Fica mais difícil' },
-                { level: 3, name: 'Plataformas', desc: 'Com obstáculos móveis' },
-                { level: 4, name: 'Boss Final', desc: 'O desafio supremo' }
+                { level: 1, name: '🌲 Floresta', desc: 'Território do Tigre' },
+                { level: 2, name: '🦇 Caverna', desc: 'Perigos subterrâneos' },
+                { level: 3, name: '⛰️ Montanha', desc: 'Plataformas perigosas' },
+                { level: 4, name: '🌋 Vulcão', desc: 'Arena do Boss' }
               ].map(({ level, name, desc }) => (
                 <button
                   key={level}
@@ -145,14 +145,14 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         {/* Level Selection - Only for runner mode */}
         {selectedMode === 'runner' && (
           <div className="mb-6 text-center">
-            <h3 className="text-lg font-bold mb-4 text-primary">Escolha Sua Fase do Sofrimento</h3>
+            <h3 className="text-lg font-bold mb-4 text-primary">Escolha Seu Bioma</h3>
             <div className="flex justify-center gap-2 mb-6 flex-wrap">
               {[
-                { level: 1, name: 'Assassinos', desc: 'Fuja dos vilões' },
-                { level: 2, name: 'Glitch Digital', desc: 'Hackear o sistema' },
-                { level: 3, name: 'Bomberman', desc: 'Arena explosiva' },
-                { level: 4, name: 'Destruir Amizades', desc: '💔 Mario Kart vibes' },
-                { level: 5, name: 'Boss Final', desc: 'O desafio supremo' }
+                { level: 1, name: '🦁 Savana', desc: 'Fuja dos predadores' },
+                { level: 2, name: '🦈 Oceano', desc: 'Fundo do mar' },
+                { level: 3, name: '🐻‍❄️ Ártico', desc: 'Gelo e neve' },
+                { level: 4, name: '🐍 Selva', desc: 'Tropical perigosa' },
+                { level: 5, name: '🌋 Vulcão', desc: 'Boss Final' }
               ].map(({ level, name, desc }) => (
                 <button
                   key={level}
@@ -173,7 +173,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
 
         {/* Player Count Selection */}
         <div className="mb-6 text-center">
-          <h3 className="text-lg font-bold mb-4 text-primary">Quantas Vítimas?</h3>
+          <h3 className="text-lg font-bold mb-4 text-primary">Quantas Feras?</h3>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4].map((count) => (
               <button
@@ -185,7 +185,7 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
                 }`}
                 onClick={() => setPlayerCount(count)}
               >
-                {count} {count === 1 ? 'Corajoso' : count === 2 ? 'Desavisados' : count === 3 ? 'Teimosos' : 'Masoquistas'}
+                {count} {count === 1 ? '🐯 Tigre' : count === 2 ? '🐯🐲 Dupla' : count === 3 ? '🐯🐲🦅 Trio' : '🐯🐲🦅🐺 Bando'}
               </button>
             ))}
           </div>
@@ -201,14 +201,15 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
             const playerKey = `player${index + 1}` as keyof typeof selectedColors;
             const controlKey = `player${index + 1}` as keyof typeof selectedControls;
             const selectedScheme = controlSchemes[selectedControls[controlKey]];
+            const animalNames = ['🐯 Tigre', '🐲 Dragão', '🦅 Águia', '🐺 Lobo'];
             
             return (
               <div key={playerKey}>
                 <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors[playerKey] }}>
-                  Vítima {index + 1}
+                  {animalNames[index] || `Animal ${index + 1}`}
                 </h3>
                 <div className="mb-3">
-                  <p className="text-sm font-medium mb-2">Cor da Derrota:</p>
+                  <p className="text-sm font-medium mb-2">Cor da Pelagem:</p>
                   <div className="grid grid-cols-4 gap-2">
                     {playerColors.map((color) => (
                       <button
@@ -272,29 +273,29 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
 
         <div className="mt-6 p-4 bg-muted rounded border-l-4 border-accent">
           <h4 className="font-bold text-accent mb-2">
-            {selectedMode === 'runner' ? 'Regras do Modo Corredor:' : (playerCount === 1 ? 'Regras para o Solitário:' : 'Regras da Discórdia:')}
+            {selectedMode === 'runner' ? 'Regras da Selva:' : (playerCount === 1 ? 'Regras para o Solitário:' : 'Regras da Matilha:')}
           </h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
             {selectedMode === 'runner' ? (
               <>
-                <li>• Corra o mais longe possível sem parar</li>
-                <li>• Evite obstáculos ou seja esmagado</li>
-                <li>• Use pulo duplo para superar desafios</li>
-                <li>• Sobreviva o máximo de tempo possível</li>
+                <li>• Corram pelos biomas selvagens sem parar</li>
+                <li>• Desviem dos animais predadores</li>
+                <li>• Pulem e abaixem para sobreviver</li>
+                <li>• Coletem itens para ficar mais forte</li>
               </>
             ) : playerCount === 1 ? (
               <>
-                <li>• Atravesse todos os níveis sozinho (que corajoso)</li>
-                <li>• Evite obstáculos vermelhos ou recomece (surpresa!)</li>
-                <li>• Colete power-ups para fingir que tem vantagem</li>
-                <li>• Domine pulos precisos (boa sorte com isso)</li>
+                <li>• Atravesse todos os biomas sozinho (que corajoso)</li>
+                <li>• Evite animais perigosos ou recomece</li>
+                <li>• Colete power-ups para ganhar vantagem</li>
+                <li>• Domine pulos precisos para sobreviver</li>
               </>
             ) : (
               <>
-                <li>• TODOS devem chegar na área dourada (sem exceções, infeliz)</li>
-                <li>• Se UM tocar nos obstáculos vermelhos, TODOS reiniciam (democracia)</li>
-                <li>• Trabalhem juntos - algumas plataformas exigem colaboração (que novidade!)</li>
-                <li>• Comunicação é fundamental (gritar não conta)</li>
+                <li>• TODOS devem chegar na toca dourada (sem exceções!)</li>
+                <li>• Se UM tocar nos predadores, TODOS reiniciam</li>
+                <li>• Trabalhem juntos - o Tigre e o Dragão são mais fortes unidos!</li>
+                <li>• Comunicação é fundamental (rugir não conta)</li>
               </>
             )}
           </ul>
@@ -306,11 +307,11 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         size="lg"
         className="text-xl px-8 py-4 bg-primary hover:bg-primary/90 border-2 border-primary-foreground font-bold animate-pixel-bounce"
       >
-        {showVictory ? "Sofrer de Novo" : "Começar o Sofrimento"}
+        {showVictory ? "Rugir de Novo" : "🐾 Iniciar Aventura"}
       </Button>
 
       <p className="text-xs text-muted-foreground mt-4">
-        Feito com 💀 para testar amizades
+        Feito com 🐾 para testar amizades selvagens
       </p>
     </div>
   );

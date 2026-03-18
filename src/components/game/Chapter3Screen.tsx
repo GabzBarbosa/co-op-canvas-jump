@@ -24,69 +24,72 @@ export const Chapter3Screen = ({ onStart, coinsCollected = 0 }: Chapter3ScreenPr
   }, [onStart]);
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a1a] flex flex-col items-center justify-center animate-fade-in">
-      {/* Scanline effect */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        {Array.from({ length: 100 }).map((_, i) => (
-          <div key={i} className="w-full h-[2px] bg-green-500/20" style={{ marginTop: i * 4 }} />
+    <div className="fixed inset-0 bg-[#001a33] flex flex-col items-center justify-center animate-fade-in">
+      {/* Water bubbles effect */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div 
+            key={i} 
+            className="absolute rounded-full bg-cyan-400/10 animate-pulse"
+            style={{ 
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${10 + Math.random() * 20}px`,
+              height: `${10 + Math.random() * 20}px`,
+              animationDelay: `${Math.random() * 2}s`
+            }}
+          />
         ))}
       </div>
       
       <div className="text-center space-y-8 animate-scale-in z-10">
-        <h1 className="text-6xl font-bold text-green-400 animate-pulse font-mono">
+        <h1 className="text-6xl font-bold text-cyan-400 animate-pulse">
           CHAPTER 3
         </h1>
         
-        <h2 className="text-4xl font-semibold text-cyan-400 font-mono">
-          Glitch Digital
+        <h2 className="text-4xl font-semibold text-blue-300">
+          🦈 Fundo do Oceano
         </h2>
         
         {coinsCollected > 0 && (
-          <div className="text-2xl text-cyan-300 font-bold animate-bounce font-mono">
-            💾 Dados coletados: {coinsCollected} bytes
+          <div className="text-2xl text-cyan-300 font-bold animate-bounce">
+            🐚 Conchas coletadas: {coinsCollected}
           </div>
         )}
         
-        <div className="space-y-4 text-gray-300 max-w-md font-mono">
+        <div className="space-y-4 text-blue-200 max-w-md">
           <p className="text-lg">
-            🦠 Cuidado com os vírus digitais!
+            🦈 Cuidado com os tubarões!
           </p>
           <p className="text-lg">
-            🔥 Desvie das firewalls
+            🪸 Desvie dos corais venenosos
           </p>
           <p className="text-lg">
-            🐛 Evite os bugs do sistema
+            🐙 Evite os tentáculos do polvo
           </p>
           <p className="text-lg">
-            💾 Colete pacotes de dados
+            🐚 Colete conchas e pérolas
           </p>
-          <p className="text-lg font-semibold text-green-400">
-            🤝 Trabalhem juntos para hackear o sistema!
+          <p className="text-lg font-semibold text-cyan-400">
+            🐾 Nadem juntos pelas profundezas!
           </p>
         </div>
         
         <div className="mt-8">
           {countdown > 0 ? (
-            <div className="text-8xl font-bold text-green-400 animate-pulse font-mono">
+            <div className="text-8xl font-bold text-cyan-400 animate-pulse">
               {countdown}
             </div>
           ) : (
-            <div className="text-4xl font-bold text-cyan-400 animate-bounce font-mono">
-              SYSTEM BREACH!
+            <div className="text-4xl font-bold text-blue-300 animate-bounce">
+              MERGULHAR!
             </div>
           )}
         </div>
         
-        <div className="text-sm text-gray-400 font-mono">
-          Meta: Percorrer 1300 metros de dados
+        <div className="text-sm text-blue-300/70">
+          Meta: Percorrer 1300 metros nas profundezas
         </div>
-      </div>
-      
-      {/* Random glitch effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-32 h-2 bg-red-500/30 animate-pulse" />
-        <div className="absolute top-1/2 right-1/3 w-24 h-1 bg-cyan-500/40 animate-pulse" />
-        <div className="absolute bottom-1/3 left-1/2 w-40 h-2 bg-green-500/20 animate-pulse" />
       </div>
     </div>
   );
