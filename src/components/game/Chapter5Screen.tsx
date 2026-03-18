@@ -23,31 +23,49 @@ export const Chapter5Screen = ({ onStart }: Chapter5ScreenProps) => {
   }, [onStart]);
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col items-center justify-center animate-fade-in">
-      <div className="text-center space-y-8 animate-scale-in">
+    <div className="fixed inset-0 bg-[#1a0000] flex flex-col items-center justify-center animate-fade-in">
+      {/* Lava particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div 
+            key={i} 
+            className="absolute rounded-full animate-pulse"
+            style={{ 
+              left: `${Math.random() * 100}%`,
+              bottom: `${Math.random() * 30}%`,
+              width: `${5 + Math.random() * 15}px`,
+              height: `${5 + Math.random() * 15}px`,
+              backgroundColor: `rgba(255, ${Math.floor(50 + Math.random() * 100)}, 0, 0.4)`,
+              animationDelay: `${Math.random() * 2}s`
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="text-center space-y-8 animate-scale-in z-10">
         <h1 className="text-6xl font-bold text-red-500 animate-pulse">
           CHAPTER 5
         </h1>
         
-        <h2 className="text-4xl font-semibold text-foreground">
-          THE ULTIMATE BOSS!
+        <h2 className="text-4xl font-semibold text-orange-400">
+          🌋 Vulcão do Dragão Ancião!
         </h2>
         
-        <div className="space-y-4 text-muted-foreground max-w-md">
+        <div className="space-y-4 text-orange-200 max-w-md">
           <p className="text-lg">
-            🌀 Todos os 3 mundos se fundiram!
+            🌋 Todos os biomas se fundiram!
           </p>
-          <p className="text-lg text-green-400">
-            🏃 Assassinos da floresta
+          <p className="text-lg text-amber-400">
+            🦁 Predadores da savana
           </p>
-          <p className="text-lg text-blue-400">
-            🍄 Inimigos do mundo Mario
+          <p className="text-lg text-cyan-400">
+            🦈 Criaturas do oceano
           </p>
-          <p className="text-lg text-orange-400">
-            💣 Explosões do Bomberman
+          <p className="text-lg text-blue-300">
+            🐻‍❄️ Feras do ártico
           </p>
           <p className="text-lg font-semibold text-red-500">
-            👹 ENFRENTEM O CHEFÃO FINAL!
+            🐉 ENFRENTEM O DRAGÃO ANCIÃO!
           </p>
         </div>
         
@@ -57,14 +75,14 @@ export const Chapter5Screen = ({ onStart }: Chapter5ScreenProps) => {
               {countdown}
             </div>
           ) : (
-            <div className="text-4xl font-bold text-red-500 animate-bounce">
-              FIGHT!
+            <div className="text-4xl font-bold text-orange-400 animate-bounce">
+              RUGIR!
             </div>
           )}
         </div>
         
-        <div className="text-sm text-muted-foreground">
-          Meta: Derrotar o boss coletando power-ups e sobrevivendo!
+        <div className="text-sm text-orange-300/70">
+          Meta: Derrotar o Dragão Ancião!
         </div>
       </div>
     </div>

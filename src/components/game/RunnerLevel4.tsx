@@ -1,6 +1,6 @@
 interface Obstacle {
   position: { x: number; y: number };
-  type: 'blueShell' | 'banana' | 'redShell' | 'greenShell' | 'lightning' | 'fakeCube' | 'brokenHeart';
+  type: 'snake' | 'spider' | 'monkey' | 'vine' | 'quicksand' | 'parrot' | 'jaguar';
   width: number;
   height: number;
   requiresJump: boolean;
@@ -12,7 +12,7 @@ interface Obstacle {
 interface Powerup {
   position: { x: number; y: number };
   collected: boolean;
-  type: 'star' | 'mushroom' | 'heart';
+  type: 'banana' | 'coconut' | 'flower';
 }
 
 export class RunnerLevel4 {
@@ -24,9 +24,9 @@ export class RunnerLevel4 {
   private spawnTimer = 0;
   private spawnInterval = 1.6;
   private difficulty = 1;
-  private rainbowOffset = 0;
-  private starPositions: Array<{ x: number; y: number; twinkle: number }> = [];
+  private leafPositions: Array<{ x: number; y: number; size: number; rot: number }> = [];
   private powerupsCollected = 0;
+  private jungleOffset = 0;
   
   public pendingCollectSound = false;
   public pendingHitSound = false;
@@ -43,21 +43,22 @@ export class RunnerLevel4 {
     this.spawnTimer = 0;
     this.difficulty = 1;
     this.powerupsCollected = 0;
-    this.rainbowOffset = 0;
+    this.jungleOffset = 0;
     
-    this.starPositions = [];
-    for (let i = 0; i < 15; i++) {
-      this.starPositions.push({
+    this.leafPositions = [];
+    for (let i = 0; i < 10; i++) {
+      this.leafPositions.push({
         x: Math.random() * 1000,
-        y: 30 + Math.random() * 150,
-        twinkle: Math.random() * Math.PI * 2
+        y: 20 + Math.random() * 100,
+        size: 5 + Math.random() * 10,
+        rot: Math.random() * Math.PI * 2
       });
     }
   }
 
   update(deltaTime: number) {
     this.distanceTraveled += (this.scrollSpeed * deltaTime) / 10;
-    this.rainbowOffset += deltaTime * 50;
+    this.jungleOffset += deltaTime;
     
     const speedIncrements = Math.floor(this.distanceTraveled / 50);
     this.scrollSpeed = 270 + (speedIncrements * 1.5);
@@ -67,12 +68,12 @@ export class RunnerLevel4 {
       const obstacle = this.obstacles[i];
       obstacle.position.x -= this.scrollSpeed * deltaTime;
       
-      if (obstacle.rotation !== undefined) {
-        obstacle.rotation += deltaTime * 5;
+      if (obstacle.type === 'parrot' && obstacle.velocityY !== undefined) {
+        obstacle.position.y += Math.sin(Date.now() / 200) * 2;
       }
       
-      if (obstacle.type === 'blueShell' && obstacle.velocityY !== undefined) {
-        obstacle.position.y += Math.sin(Date.now() / 200) * 2;
+      if (obstacle.rotation !== undefined) {
+        obstacle.rotation += deltaTime * 3;
       }
       
       if (obstacle.position.x < -100) {
@@ -87,135 +88,132 @@ export class RunnerLevel4 {
       }
     }
     
-    this.starPositions.forEach(star => {
-      star.x -= this.scrollSpeed * deltaTime * 0.1;
-      star.twinkle += deltaTime * 3;
-      if (star.x < -20) {
-        star.x = 1020;
-        star.y = 30 + Math.random() * 150;
+    this.leafPositions.forEach(leaf => {
+      leaf.x -= this.scrollSpeed * deltaTime * 0.15;
+      leaf.rot += deltaTime * 2;
+      if (leaf.x < -20) {
+        leaf.x = 1020;
+        leaf.y = 20 + Math.random() * 100;
       }
     });
     
     this.spawnTimer += deltaTime;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      this.spawnFriendshipObstacle();
+      this.spawnJungleObstacle();
     }
   }
 
-  private spawnFriendshipObstacle() {
+  private spawnJungleObstacle() {
     const rand = Math.random();
     const x = 1000;
     
     if (rand < 0.18) {
-      // Blue Shell (flying, needs crouch)
+      // Parrot (flying, needs crouch)
       this.obstacles.push({
         position: { x, y: 280 },
-        type: 'blueShell',
-        width: 45,
-        height: 35,
+        type: 'parrot',
+        width: 40,
+        height: 30,
         requiresJump: false,
         requiresCrouch: true,
         velocityY: 1
       });
-    } else if (rand < 0.35) {
-      // Banana peel (needs jump)
-      const count = 1 + Math.floor(Math.random() * 3);
+    } else if (rand < 0.33) {
+      // Snakes (ground, needs jump)
+      const count = 1 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) {
         this.obstacles.push({
-          position: { x: x + i * 50, y: 345 },
-          type: 'banana',
+          position: { x: x + i * 45, y: 350 },
+          type: 'snake',
           width: 35,
-          height: 25,
+          height: 20,
           requiresJump: true,
           requiresCrouch: false
         });
       }
-      
       if (Math.random() > 0.5) {
-        this.spawnPowerup(x + 25);
+        this.spawnPowerup(x + 20);
       }
-    } else if (rand < 0.48) {
-      // Red Shell (homing, needs jump)
+    } else if (rand < 0.46) {
+      // Spider (hanging, needs jump)
       this.obstacles.push({
         position: { x, y: 340 },
-        type: 'redShell',
-        width: 40,
+        type: 'spider',
+        width: 35,
         height: 30,
         requiresJump: true,
-        requiresCrouch: false,
-        rotation: 0
+        requiresCrouch: false
       });
     } else if (rand < 0.58) {
-      // Green Shell (bouncing)
+      // Monkey throwing coconuts
       this.obstacles.push({
         position: { x, y: 340 },
-        type: 'greenShell',
-        width: 40,
+        type: 'monkey',
+        width: 35,
         height: 30,
         requiresJump: true,
         requiresCrouch: false,
         rotation: 0
       });
     } else if (rand < 0.68) {
-      // Lightning bolt (tall, needs crouch)
+      // Vine (tall, needs crouch)
       this.obstacles.push({
         position: { x, y: 250 },
-        type: 'lightning',
-        width: 30,
+        type: 'vine',
+        width: 25,
         height: 120,
         requiresJump: false,
         requiresCrouch: true
       });
     } else if (rand < 0.80) {
-      // Fake item cube (needs jump)
+      // Quicksand (needs jump)
       this.obstacles.push({
-        position: { x, y: 320 },
-        type: 'fakeCube',
-        width: 40,
-        height: 40,
+        position: { x, y: 350 },
+        type: 'quicksand',
+        width: 60,
+        height: 20,
         requiresJump: true,
         requiresCrouch: false
       });
-      
-      this.spawnPowerup(x + 80);
+      this.spawnPowerup(x + 30);
     } else if (rand < 0.90) {
-      // Broken heart (emotional damage! needs jump)
+      // Jaguar (fast, needs jump)
       this.obstacles.push({
-        position: { x, y: 330 },
-        type: 'brokenHeart',
-        width: 50,
-        height: 45,
+        position: { x, y: 335 },
+        type: 'jaguar',
+        width: 45,
+        height: 35,
         requiresJump: true,
         requiresCrouch: false
       });
     } else {
-      // Combo: bananas + blue shell
+      // Combo: snakes + parrot
       this.obstacles.push({
-        position: { x, y: 345 },
-        type: 'banana',
+        position: { x, y: 350 },
+        type: 'snake',
         width: 35,
-        height: 25,
+        height: 20,
         requiresJump: true,
         requiresCrouch: false
       });
       
       this.obstacles.push({
-        position: { x: x + 80, y: 285 },
-        type: 'blueShell',
-        width: 45,
-        height: 35,
+        position: { x: x + 70, y: 285 },
+        type: 'parrot',
+        width: 40,
+        height: 30,
         requiresJump: false,
         requiresCrouch: true,
         velocityY: 1
       });
       
-      this.spawnPowerup(x + 40);
+      this.spawnPowerup(x + 35);
     }
   }
 
   private spawnPowerup(x: number) {
-    const types: Array<'star' | 'mushroom' | 'heart'> = ['star', 'mushroom', 'heart'];
+    const types: Array<'banana' | 'coconut' | 'flower'> = ['banana', 'coconut', 'flower'];
     this.powerups.push({
       position: { x, y: 270 + Math.random() * 40 },
       collected: false,
@@ -282,69 +280,97 @@ export class RunnerLevel4 {
   }
 
   private renderBackground(ctx: CanvasRenderingContext2D) {
-    // Dark purple party background
+    // Dense jungle gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, "#1a0a2e");
-    gradient.addColorStop(0.5, "#2d1b4e");
-    gradient.addColorStop(1, "#4a2c7a");
+    gradient.addColorStop(0, "#0a3d0a");
+    gradient.addColorStop(0.3, "#1a5c1a");
+    gradient.addColorStop(0.6, "#2d7a2d");
+    gradient.addColorStop(1, "#1a4a1a");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 1000, 400);
     
-    // Rainbow road stripes in background
-    const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#8b00ff'];
-    for (let i = 0; i < colors.length; i++) {
-      const y = 200 + Math.sin((this.rainbowOffset / 100) + i * 0.5) * 30;
-      ctx.strokeStyle = colors[i] + '40';
-      ctx.lineWidth = 8;
+    // Tree canopy at top
+    ctx.fillStyle = "#0d4d0d";
+    for (let x = 0; x < 1000; x += 60) {
       ctx.beginPath();
-      ctx.moveTo(0, y + i * 15);
-      ctx.lineTo(1000, y + i * 15 + Math.sin(this.rainbowOffset / 50) * 20);
-      ctx.stroke();
+      ctx.arc(x + 30, 30, 40, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#1a6b1a";
+    for (let x = 20; x < 1000; x += 80) {
+      ctx.beginPath();
+      ctx.arc(x + 20, 50, 30, 0, Math.PI * 2);
+      ctx.fill();
     }
     
-    // Twinkling stars
-    this.starPositions.forEach(star => {
-      const alpha = 0.5 + Math.sin(star.twinkle) * 0.5;
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    // Light filtering through canopy
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    for (let i = 0; i < 5; i++) {
+      const rayX = 80 + i * 200 + Math.sin(this.jungleOffset + i) * 20;
+      ctx.fillStyle = "#FFD700";
       ctx.beginPath();
-      ctx.arc(star.x, star.y, 2 + Math.sin(star.twinkle) * 1, 0, Math.PI * 2);
+      ctx.moveTo(rayX - 10, 60);
+      ctx.lineTo(rayX + 10, 60);
+      ctx.lineTo(rayX + 40, 370);
+      ctx.lineTo(rayX - 40, 370);
       ctx.fill();
+    }
+    ctx.restore();
+    
+    // Falling leaves
+    this.leafPositions.forEach(leaf => {
+      ctx.save();
+      ctx.translate(leaf.x, leaf.y);
+      ctx.rotate(leaf.rot);
+      ctx.fillStyle = "#228B22";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, leaf.size, leaf.size / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     });
     
-    // "DESTRUIR AMIZADES" text effect
-    ctx.save();
-    ctx.globalAlpha = 0.1;
-    ctx.font = "bold 60px Arial";
-    ctx.textAlign = "center";
-    const hue = (Date.now() / 20) % 360;
-    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-    ctx.fillText("💔", 500, 100);
-    ctx.restore();
+    // Vines hanging from top
+    ctx.strokeStyle = "#2d5a2d";
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 8; i++) {
+      const vx = 50 + i * 130;
+      const sway = Math.sin(this.jungleOffset * 0.5 + i) * 10;
+      ctx.beginPath();
+      ctx.moveTo(vx, 0);
+      ctx.quadraticCurveTo(vx + sway, 100, vx - sway * 0.5, 150 + Math.random() * 50);
+      ctx.stroke();
+    }
   }
 
   private renderGround(ctx: CanvasRenderingContext2D) {
-    // Rainbow road ground
-    const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#8b00ff'];
-    const stripeWidth = 1000 / colors.length;
+    // Jungle floor - dirt and moss
+    ctx.fillStyle = "#3d2b1f";
+    ctx.fillRect(0, 370, 1000, 30);
     
-    for (let i = 0; i < colors.length; i++) {
-      const offset = (this.rainbowOffset + i * stripeWidth) % (stripeWidth * colors.length);
-      ctx.fillStyle = colors[(i + Math.floor(this.rainbowOffset / 50)) % colors.length];
-      ctx.fillRect(i * stripeWidth, 370, stripeWidth, 30);
+    // Moss patches
+    ctx.fillStyle = "#2d5a2d";
+    for (let x = 0; x < 1000; x += 40) {
+      ctx.fillRect(x, 370, 20, 5);
     }
     
-    // Road edges
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 368, 1000, 4);
+    // Roots
+    ctx.strokeStyle = "#5a3d2b";
+    ctx.lineWidth = 2;
+    for (let x = 0; x < 1000; x += 100) {
+      ctx.beginPath();
+      ctx.moveTo(x, 370);
+      ctx.quadraticCurveTo(x + 20, 375, x + 40, 370);
+      ctx.stroke();
+    }
     
-    // Checkered pattern overlay
-    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-    for (let x = -Math.floor(this.rainbowOffset) % 40; x < 1000; x += 40) {
-      for (let i = 0; i < 2; i++) {
-        if ((Math.floor(x / 40) + i) % 2 === 0) {
-          ctx.fillRect(x, 370 + i * 15, 20, 15);
-        }
-      }
+    // Small plants/mushrooms
+    ctx.fillStyle = "#4a8a4a";
+    for (let x = 15; x < 1000; x += 70) {
+      ctx.fillRect(x, 365, 3, 5);
+      ctx.beginPath();
+      ctx.arc(x + 1, 364, 4, Math.PI, 0);
+      ctx.fill();
     }
   }
 
@@ -353,260 +379,262 @@ export class RunnerLevel4 {
     const y = obstacle.position.y;
     
     switch (obstacle.type) {
-      case 'blueShell':
-        this.renderBlueShell(ctx, x, y, obstacle);
+      case 'snake':
+        // Green snake on ground
+        ctx.fillStyle = "#228B22";
+        ctx.beginPath();
+        ctx.moveTo(x, y + 10);
+        for (let i = 0; i < obstacle.width; i += 5) {
+          ctx.lineTo(x + i, y + 10 + Math.sin(i * 0.3 + this.jungleOffset * 5) * 5);
+        }
+        ctx.lineTo(x + obstacle.width, y + 15);
+        for (let i = obstacle.width; i >= 0; i -= 5) {
+          ctx.lineTo(x + i, y + 15 + Math.sin(i * 0.3 + this.jungleOffset * 5) * 5);
+        }
+        ctx.fill();
+        // Head
+        ctx.fillStyle = "#1a6b1a";
+        ctx.beginPath();
+        ctx.arc(x + obstacle.width, y + 10, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Eyes
+        ctx.fillStyle = "#FFD700";
+        ctx.beginPath();
+        ctx.arc(x + obstacle.width + 2, y + 8, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + obstacle.width + 2, y + 8, 1, 0, Math.PI * 2);
+        ctx.fill();
+        // Tongue
+        ctx.strokeStyle = "#FF0000";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + obstacle.width + 5, y + 10);
+        ctx.lineTo(x + obstacle.width + 10, y + 8);
+        ctx.moveTo(x + obstacle.width + 5, y + 10);
+        ctx.lineTo(x + obstacle.width + 10, y + 12);
+        ctx.stroke();
         break;
-      case 'banana':
-        this.renderBanana(ctx, x, y);
+        
+      case 'spider':
+        // Body
+        ctx.fillStyle = "#1a1a1a";
+        ctx.beginPath();
+        ctx.arc(x + 17, y + 18, 10, 0, Math.PI * 2);
+        ctx.fill();
+        // Head
+        ctx.beginPath();
+        ctx.arc(x + 17, y + 8, 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Red marking
+        ctx.fillStyle = "#FF0000";
+        ctx.beginPath();
+        ctx.arc(x + 17, y + 18, 4, 0, Math.PI * 2);
+        ctx.fill();
+        // Legs
+        ctx.strokeStyle = "#1a1a1a";
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 4; i++) {
+          const legAngle = -0.5 + i * 0.4;
+          ctx.beginPath();
+          ctx.moveTo(x + 17, y + 15);
+          ctx.lineTo(x + 17 - 15 * Math.cos(legAngle), y + 15 + 12 * Math.sin(legAngle + this.jungleOffset * 3));
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x + 17, y + 15);
+          ctx.lineTo(x + 17 + 15 * Math.cos(legAngle), y + 15 + 12 * Math.sin(legAngle + this.jungleOffset * 3 + 0.5));
+          ctx.stroke();
+        }
+        // Eyes
+        ctx.fillStyle = "#FF0000";
+        ctx.beginPath();
+        ctx.arc(x + 14, y + 6, 2, 0, Math.PI * 2);
+        ctx.arc(x + 20, y + 6, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Web thread
+        ctx.strokeStyle = "#ccc";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + 17, y);
+        ctx.lineTo(x + 17, y - 30);
+        ctx.stroke();
         break;
-      case 'redShell':
-        this.renderRedShell(ctx, x, y, obstacle);
+        
+      case 'monkey':
+        // Brown body
+        ctx.fillStyle = "#8B4513";
+        ctx.beginPath();
+        ctx.ellipse(x + 17, y + 15, 12, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Head
+        ctx.beginPath();
+        ctx.arc(x + 25, y + 8, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // Face
+        ctx.fillStyle = "#DEB887";
+        ctx.beginPath();
+        ctx.arc(x + 27, y + 10, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Eyes
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + 25, y + 8, 2, 0, Math.PI * 2);
+        ctx.arc(x + 30, y + 8, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Tail
+        ctx.strokeStyle = "#8B4513";
+        ctx.lineWidth = 3;
+        const tailCurl = Math.sin(this.jungleOffset * 4) * 5;
+        ctx.beginPath();
+        ctx.moveTo(x + 5, y + 15);
+        ctx.quadraticCurveTo(x - 5, y + 5, x - 3, y - 5 + tailCurl);
+        ctx.stroke();
+        // Arms
+        ctx.fillRect(x + 8, y + 20, 5, 10);
+        ctx.fillRect(x + 22, y + 20, 5, 10);
         break;
-      case 'greenShell':
-        this.renderGreenShell(ctx, x, y, obstacle);
+        
+      case 'vine':
+        // Thick hanging vine
+        ctx.strokeStyle = "#2d5a2d";
+        ctx.lineWidth = 8;
+        const sway = Math.sin(this.jungleOffset * 2) * 5;
+        ctx.beginPath();
+        ctx.moveTo(x + 12, y);
+        ctx.quadraticCurveTo(x + 12 + sway, y + 60, x + 12 - sway, y + obstacle.height);
+        ctx.stroke();
+        // Leaves on vine
+        ctx.fillStyle = "#228B22";
+        for (let i = 0; i < 4; i++) {
+          const ly = y + 20 + i * 25;
+          const lx = x + 12 + Math.sin(this.jungleOffset * 2 + i) * 3;
+          ctx.beginPath();
+          ctx.ellipse(lx + 8, ly, 8, 4, 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
         break;
-      case 'lightning':
-        this.renderLightning(ctx, x, y, obstacle);
+        
+      case 'quicksand':
+        // Bubbling quicksand
+        ctx.fillStyle = "#C2A35A";
+        ctx.fillRect(x, y, obstacle.width, obstacle.height);
+        // Bubbles
+        ctx.fillStyle = "#D4B56A";
+        for (let i = 0; i < 4; i++) {
+          const bx = x + 10 + i * 14;
+          const bubbleY = y + 5 + Math.sin(Date.now() / 200 + i) * 3;
+          ctx.beginPath();
+          ctx.arc(bx, bubbleY, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Warning texture
+        ctx.fillStyle = "#B8903A";
+        ctx.fillRect(x + 5, y + 12, obstacle.width - 10, 3);
         break;
-      case 'fakeCube':
-        this.renderFakeCube(ctx, x, y);
+        
+      case 'parrot':
+        // Colorful parrot
+        // Body
+        ctx.fillStyle = "#FF4500";
+        ctx.beginPath();
+        ctx.ellipse(x + 20, y + 15, 12, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Wing
+        ctx.fillStyle = "#FFD700";
+        const wingFlap = Math.sin(Date.now() / 100) * 5;
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y + 10);
+        ctx.lineTo(x + 5, y + 5 + wingFlap);
+        ctx.lineTo(x + 15, y + 15);
+        ctx.fill();
+        ctx.fillStyle = "#00BFFF";
+        ctx.beginPath();
+        ctx.moveTo(x + 30, y + 10);
+        ctx.lineTo(x + 35, y + 5 + wingFlap);
+        ctx.lineTo(x + 25, y + 15);
+        ctx.fill();
+        // Head
+        ctx.fillStyle = "#32CD32";
+        ctx.beginPath();
+        ctx.arc(x + 28, y + 8, 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Beak
+        ctx.fillStyle = "#FFD700";
+        ctx.beginPath();
+        ctx.moveTo(x + 33, y + 8);
+        ctx.lineTo(x + 38, y + 10);
+        ctx.lineTo(x + 33, y + 12);
+        ctx.fill();
+        // Eye
+        ctx.fillStyle = "#FFF";
+        ctx.beginPath();
+        ctx.arc(x + 30, y + 7, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + 30, y + 7, 1, 0, Math.PI * 2);
+        ctx.fill();
+        // Tail feathers
+        ctx.fillStyle = "#FF4500";
+        ctx.fillRect(x + 5, y + 20, 4, 10);
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(x + 9, y + 20, 4, 12);
+        ctx.fillStyle = "#00BFFF";
+        ctx.fillRect(x + 13, y + 20, 4, 10);
         break;
-      case 'brokenHeart':
-        this.renderBrokenHeart(ctx, x, y);
+        
+      case 'jaguar':
+        // Spotted jaguar
+        ctx.fillStyle = "#DAA520";
+        ctx.beginPath();
+        ctx.ellipse(x + 22, y + 18, 20, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Head
+        ctx.fillStyle = "#DAA520";
+        ctx.beginPath();
+        ctx.arc(x + 38, y + 12, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // Spots
+        ctx.fillStyle = "#8B4513";
+        const spots = [[10, 12], [18, 20], [26, 14], [30, 22], [15, 24]];
+        spots.forEach(([sx, sy]) => {
+          ctx.beginPath();
+          ctx.arc(x + sx, y + sy, 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        // Eyes
+        ctx.fillStyle = "#FFD700";
+        ctx.beginPath();
+        ctx.arc(x + 36, y + 10, 3, 0, Math.PI * 2);
+        ctx.arc(x + 42, y + 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(x + 37, y + 10, 1, 0, Math.PI * 2);
+        ctx.arc(x + 43, y + 10, 1, 0, Math.PI * 2);
+        ctx.fill();
+        // Nose
+        ctx.fillStyle = "#8B4513";
+        ctx.beginPath();
+        ctx.arc(x + 44, y + 14, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Ears
+        ctx.fillStyle = "#DAA520";
+        ctx.fillRect(x + 34, y + 3, 4, 5);
+        ctx.fillRect(x + 42, y + 3, 4, 5);
+        // Legs
+        ctx.fillRect(x + 10, y + 27, 6, 8);
+        ctx.fillRect(x + 30, y + 27, 6, 8);
+        // Tail
+        ctx.strokeStyle = "#DAA520";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x + 2, y + 18);
+        ctx.quadraticCurveTo(x - 8, y + 10, x - 5, y + 5);
+        ctx.stroke();
         break;
     }
-  }
-
-  private renderBlueShell(ctx: CanvasRenderingContext2D, x: number, y: number, obstacle: Obstacle) {
-    // Wings
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.ellipse(x - 5, y + 15, 12, 8, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(x + obstacle.width + 5, y + 15, 12, 8, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Shell body
-    ctx.fillStyle = "#0066ff";
-    ctx.beginPath();
-    ctx.ellipse(x + obstacle.width / 2, y + obstacle.height / 2, obstacle.width / 2, obstacle.height / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Shell pattern
-    ctx.fillStyle = "#0044aa";
-    ctx.beginPath();
-    ctx.ellipse(x + obstacle.width / 2, y + obstacle.height / 2 + 5, obstacle.width / 3, obstacle.height / 3, 0, 0, Math.PI);
-    ctx.fill();
-    
-    // Spikes
-    ctx.fillStyle = "#ffcc00";
-    for (let i = 0; i < 3; i++) {
-      const spikeX = x + 10 + i * 12;
-      ctx.beginPath();
-      ctx.moveTo(spikeX, y + 5);
-      ctx.lineTo(spikeX + 5, y - 8);
-      ctx.lineTo(spikeX + 10, y + 5);
-      ctx.fill();
-    }
-    
-    // Glow effect
-    ctx.strokeStyle = "#00aaff";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(x + obstacle.width / 2, y + obstacle.height / 2, obstacle.width / 2 + 5, obstacle.height / 2 + 5, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  private renderBanana(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    ctx.fillStyle = "#ffdd00";
-    ctx.beginPath();
-    ctx.moveTo(x + 5, y + 20);
-    ctx.quadraticCurveTo(x, y, x + 15, y + 5);
-    ctx.quadraticCurveTo(x + 30, y + 10, x + 30, y + 20);
-    ctx.quadraticCurveTo(x + 25, y + 25, x + 15, y + 22);
-    ctx.quadraticCurveTo(x + 5, y + 25, x + 5, y + 20);
-    ctx.fill();
-    
-    // Brown tips
-    ctx.fillStyle = "#8B4513";
-    ctx.beginPath();
-    ctx.arc(x + 5, y + 20, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x + 15, y + 5, 2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Spots
-    ctx.fillStyle = "#cc9900";
-    ctx.beginPath();
-    ctx.arc(x + 18, y + 15, 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  private renderRedShell(ctx: CanvasRenderingContext2D, x: number, y: number, obstacle: Obstacle) {
-    ctx.save();
-    ctx.translate(x + obstacle.width / 2, y + obstacle.height / 2);
-    ctx.rotate(obstacle.rotation || 0);
-    
-    // Shell
-    ctx.fillStyle = "#ff0000";
-    ctx.beginPath();
-    ctx.ellipse(0, 0, obstacle.width / 2, obstacle.height / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Pattern
-    ctx.fillStyle = "#cc0000";
-    ctx.beginPath();
-    ctx.ellipse(0, 5, obstacle.width / 3, obstacle.height / 3, 0, 0, Math.PI);
-    ctx.fill();
-    
-    // White ring
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, obstacle.width / 2 - 5, obstacle.height / 2 - 5, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.restore();
-  }
-
-  private renderGreenShell(ctx: CanvasRenderingContext2D, x: number, y: number, obstacle: Obstacle) {
-    ctx.save();
-    ctx.translate(x + obstacle.width / 2, y + obstacle.height / 2);
-    ctx.rotate(obstacle.rotation || 0);
-    
-    ctx.fillStyle = "#00cc00";
-    ctx.beginPath();
-    ctx.ellipse(0, 0, obstacle.width / 2, obstacle.height / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.fillStyle = "#009900";
-    ctx.beginPath();
-    ctx.ellipse(0, 5, obstacle.width / 3, obstacle.height / 3, 0, 0, Math.PI);
-    ctx.fill();
-    
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, obstacle.width / 2 - 5, obstacle.height / 2 - 5, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.restore();
-  }
-
-  private renderLightning(ctx: CanvasRenderingContext2D, x: number, y: number, obstacle: Obstacle) {
-    const flash = Math.sin(Date.now() / 50) * 0.3 + 0.7;
-    
-    // Glow
-    ctx.fillStyle = `rgba(255, 255, 0, ${flash * 0.3})`;
-    ctx.beginPath();
-    ctx.ellipse(x + 15, y + 60, 40, 70, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Lightning bolt
-    ctx.fillStyle = `rgba(255, 255, 0, ${flash})`;
-    ctx.beginPath();
-    ctx.moveTo(x + 15, y);
-    ctx.lineTo(x + 25, y + 45);
-    ctx.lineTo(x + 18, y + 45);
-    ctx.lineTo(x + 28, y + obstacle.height);
-    ctx.lineTo(x + 8, y + 70);
-    ctx.lineTo(x + 15, y + 70);
-    ctx.lineTo(x + 5, y + 45);
-    ctx.lineTo(x + 12, y + 45);
-    ctx.closePath();
-    ctx.fill();
-    
-    // White core
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.moveTo(x + 14, y + 10);
-    ctx.lineTo(x + 20, y + 45);
-    ctx.lineTo(x + 16, y + 45);
-    ctx.lineTo(x + 22, y + 100);
-    ctx.lineTo(x + 12, y + 75);
-    ctx.lineTo(x + 15, y + 75);
-    ctx.lineTo(x + 10, y + 45);
-    ctx.lineTo(x + 13, y + 45);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  private renderFakeCube(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    // Fake question block with upside-down question mark
-    ctx.fillStyle = "#ff6600";
-    ctx.fillRect(x, y, 40, 40);
-    
-    // Border
-    ctx.strokeStyle = "#cc4400";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x, y, 40, 40);
-    
-    // Upside-down question mark (trap!)
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 24px Arial";
-    ctx.textAlign = "center";
-    ctx.save();
-    ctx.translate(x + 20, y + 28);
-    ctx.rotate(Math.PI);
-    ctx.fillText("?", 0, 0);
-    ctx.restore();
-    
-    // Evil eyes
-    ctx.fillStyle = "#ff0000";
-    ctx.beginPath();
-    ctx.arc(x + 12, y + 12, 3, 0, Math.PI * 2);
-    ctx.arc(x + 28, y + 12, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  private renderBrokenHeart(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    const pulse = 1 + Math.sin(Date.now() / 200) * 0.1;
-    
-    ctx.save();
-    ctx.translate(x + 25, y + 22);
-    ctx.scale(pulse, pulse);
-    
-    // Left half
-    ctx.fillStyle = "#ff0066";
-    ctx.beginPath();
-    ctx.moveTo(-2, 0);
-    ctx.bezierCurveTo(-25, -15, -25, -35, -12, -35);
-    ctx.bezierCurveTo(-5, -35, -2, -25, -2, -20);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Right half (offset for broken effect)
-    ctx.fillStyle = "#ff3388";
-    ctx.beginPath();
-    ctx.moveTo(4, 2);
-    ctx.bezierCurveTo(27, -13, 27, -33, 14, -33);
-    ctx.bezierCurveTo(7, -33, 4, -23, 4, -18);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Crack line
-    ctx.strokeStyle = "#1a0a2e";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, -35);
-    ctx.lineTo(-3, -20);
-    ctx.lineTo(3, -10);
-    ctx.lineTo(-2, 5);
-    ctx.lineTo(2, 20);
-    ctx.stroke();
-    
-    // Tear drops
-    ctx.fillStyle = "#66ccff";
-    ctx.beginPath();
-    ctx.ellipse(-15, 10, 3, 5, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(17, 12, 3, 5, -0.3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.restore();
   }
 
   private renderPowerup(ctx: CanvasRenderingContext2D, powerup: Powerup) {
@@ -616,64 +644,50 @@ export class RunnerLevel4 {
     const glow = 0.3 + Math.sin(Date.now() / 150) * 0.2;
     
     // Glow
-    ctx.fillStyle = powerup.type === 'star' ? `rgba(255, 215, 0, ${glow})` :
-                    powerup.type === 'mushroom' ? `rgba(255, 100, 100, ${glow})` :
-                    `rgba(255, 100, 150, ${glow})`;
+    ctx.fillStyle = powerup.type === 'banana' ? `rgba(255, 215, 0, ${glow})` :
+                    powerup.type === 'coconut' ? `rgba(139, 90, 43, ${glow})` :
+                    `rgba(255, 105, 180, ${glow})`;
     ctx.beginPath();
-    ctx.arc(x + 15, y + 15 + bounce, 25, 0, Math.PI * 2);
+    ctx.arc(x + 15, y + 15 + bounce, 20, 0, Math.PI * 2);
     ctx.fill();
     
-    if (powerup.type === 'star') {
-      // Star powerup
-      ctx.fillStyle = "#ffd700";
-      this.drawStar(ctx, x + 15, y + 15 + bounce, 15, 5);
-      ctx.fillStyle = "#fff";
+    if (powerup.type === 'banana') {
+      ctx.fillStyle = "#FFD700";
       ctx.beginPath();
-      ctx.arc(x + 12, y + 12 + bounce, 3, 0, Math.PI * 2);
+      ctx.moveTo(x + 5, y + 20 + bounce);
+      ctx.quadraticCurveTo(x, y + bounce, x + 15, y + 5 + bounce);
+      ctx.quadraticCurveTo(x + 30, y + 10 + bounce, x + 28, y + 20 + bounce);
+      ctx.quadraticCurveTo(x + 20, y + 22 + bounce, x + 15, y + 18 + bounce);
       ctx.fill();
-    } else if (powerup.type === 'mushroom') {
-      // Mushroom powerup
-      ctx.fillStyle = "#ff4444";
+    } else if (powerup.type === 'coconut') {
+      ctx.fillStyle = "#8B5A2B";
       ctx.beginPath();
-      ctx.arc(x + 15, y + 10 + bounce, 12, Math.PI, 0);
+      ctx.arc(x + 15, y + 15 + bounce, 10, 0, Math.PI * 2);
       ctx.fill();
-      
-      ctx.fillStyle = "#fff";
+      // Eyes/dots
+      ctx.fillStyle = "#5a3a1a";
       ctx.beginPath();
-      ctx.arc(x + 10, y + 8 + bounce, 4, 0, Math.PI * 2);
-      ctx.arc(x + 20, y + 8 + bounce, 4, 0, Math.PI * 2);
+      ctx.arc(x + 12, y + 12 + bounce, 2, 0, Math.PI * 2);
+      ctx.arc(x + 18, y + 12 + bounce, 2, 0, Math.PI * 2);
       ctx.fill();
-      
-      ctx.fillStyle = "#ffe4c4";
-      ctx.fillRect(x + 10, y + 10 + bounce, 10, 15);
     } else {
-      // Heart powerup
-      ctx.fillStyle = "#ff69b4";
+      // Tropical flower
+      ctx.fillStyle = "#FF69B4";
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.ellipse(
+          x + 15 + Math.cos(angle) * 6,
+          y + 15 + bounce + Math.sin(angle) * 6,
+          5, 3, angle, 0, Math.PI * 2
+        );
+        ctx.fill();
+      }
+      ctx.fillStyle = "#FFD700";
       ctx.beginPath();
-      ctx.moveTo(x + 15, y + 25 + bounce);
-      ctx.bezierCurveTo(x, y + 15 + bounce, x, y + bounce, x + 15, y + 8 + bounce);
-      ctx.bezierCurveTo(x + 30, y + bounce, x + 30, y + 15 + bounce, x + 15, y + 25 + bounce);
-      ctx.fill();
-      
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(x + 10, y + 10 + bounce, 3, 0, Math.PI * 2);
+      ctx.arc(x + 15, y + 15 + bounce, 4, 0, Math.PI * 2);
       ctx.fill();
     }
-  }
-
-  private drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, points: number) {
-    ctx.beginPath();
-    for (let i = 0; i < points * 2; i++) {
-      const r = i % 2 === 0 ? radius : radius / 2;
-      const angle = (i * Math.PI) / points - Math.PI / 2;
-      const x = cx + Math.cos(angle) * r;
-      const y = cy + Math.sin(angle) * r;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.fill();
   }
 
   getStartPosition() {

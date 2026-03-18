@@ -206,7 +206,7 @@ export class RunnerGameController {
     // Speed indicator
     this.ctx.font = "12px monospace";
     this.ctx.textAlign = "left";
-    this.ctx.fillText("CHAPTER 2: RUN FOR YOUR LIFE!", 20, 30);
+    this.ctx.fillText("CHAPTER 2: 🦁 SAVANA SELVAGEM", 20, 30);
     
     // Controls reminder
     this.ctx.textAlign = "right";

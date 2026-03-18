@@ -7,12 +7,12 @@ export class RunnerObstacle {
   public type: ObstacleType;
   public requiresJump: boolean;
   public requiresCrouch: boolean;
+  private animTime = 0;
 
   constructor(x: number, y: number, type: ObstacleType) {
     this.position = { x, y };
     this.type = type;
     
-    // Set dimensions and requirements based on type
     switch (type) {
       case "log":
         this.width = 40;
@@ -28,7 +28,7 @@ export class RunnerObstacle {
         break;
       case "spike":
         this.width = 32;
-        this.height = 20; // Altura reduzida para permitir agachar
+        this.height = 20;
         this.requiresJump = false;
         this.requiresCrouch = true;
         break;
@@ -43,6 +43,7 @@ export class RunnerObstacle {
 
   update(deltaTime: number, scrollSpeed: number) {
     this.position.x -= scrollSpeed * deltaTime;
+    this.animTime += deltaTime;
   }
 
   getBounds() {
@@ -55,52 +56,83 @@ export class RunnerObstacle {
   }
 
   render(ctx: CanvasRenderingContext2D) {
+    const x = this.position.x;
+    const y = this.position.y;
+    
     switch (this.type) {
       case "log":
-        // Brown log
-        ctx.fillStyle = "#8B4513";
-        ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-        ctx.fillStyle = "#654321";
-        ctx.fillRect(this.position.x + 4, this.position.y + 4, this.width - 8, this.height - 8);
+        // Rock/boulder obstacle
+        ctx.fillStyle = "#8B7355";
+        ctx.beginPath();
+        ctx.ellipse(x + this.width / 2, y + this.height / 2, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#6B5335";
+        ctx.beginPath();
+        ctx.ellipse(x + this.width / 2 - 3, y + this.height / 2 - 3, this.width / 3, this.height / 3, 0, 0, Math.PI * 2);
+        ctx.fill();
         break;
         
       case "hole":
-        // Black hole in ground
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-        ctx.strokeStyle = "#444444";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+        // Mud pit
+        ctx.fillStyle = "#3d2b1f";
+        ctx.fillRect(x, y, this.width, this.height);
+        ctx.fillStyle = "#5a3d2b";
+        // Bubbles
+        const bubbleOffset = Math.sin(this.animTime * 3) * 2;
+        ctx.beginPath();
+        ctx.arc(x + 15, y + 10 + bubbleOffset, 5, 0, Math.PI * 2);
+        ctx.arc(x + 40, y + 20 - bubbleOffset, 4, 0, Math.PI * 2);
+        ctx.fill();
         break;
         
       case "spike":
-        // Gray spikes pointing down from above (player needs to crouch)
-        ctx.fillStyle = "#666666";
-        ctx.fillRect(this.position.x, this.position.y, this.width, 8);
-        
-        // Draw spike points facing down
-        ctx.fillStyle = "#888888";
-        for (let i = 0; i < 4; i++) {
-          const spikeX = this.position.x + (i * 8);
-          ctx.beginPath();
-          ctx.moveTo(spikeX, this.position.y + 8);
-          ctx.lineTo(spikeX + 4, this.position.y + 20);
-          ctx.lineTo(spikeX + 8, this.position.y + 8);
-          ctx.fill();
-        }
+        // Eagle/hawk flying overhead (needs crouch)
+        ctx.fillStyle = "#8B4513";
+        // Body
+        ctx.fillRect(x + 8, y + 8, 16, 8);
+        // Wings spread
+        const wingFlap = Math.sin(this.animTime * 8) * 3;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 10 + wingFlap);
+        ctx.lineTo(x + 8, y + 12);
+        ctx.lineTo(x + 4, y + 5 + wingFlap);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + 32, y + 10 + wingFlap);
+        ctx.lineTo(x + 24, y + 12);
+        ctx.lineTo(x + 28, y + 5 + wingFlap);
+        ctx.fill();
+        // Head
+        ctx.fillStyle = "#FFF";
+        ctx.fillRect(x + 22, y + 8, 6, 5);
+        // Beak
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(x + 28, y + 9, 4, 3);
+        // Eye
+        ctx.fillStyle = "#000";
+        ctx.fillRect(x + 24, y + 9, 2, 2);
         break;
         
       case "enemy":
-        // Red enemy square
-        ctx.fillStyle = "#E74C3C";
-        ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-        ctx.fillStyle = "#C0392B";
-        ctx.fillRect(this.position.x + 4, this.position.y + 4, this.width - 8, this.height - 8);
-        
-        // Simple eyes
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(this.position.x + 8, this.position.y + 8, 4, 4);
-        ctx.fillRect(this.position.x + 20, this.position.y + 8, 4, 4);
+        // Hyena enemy
+        ctx.fillStyle = "#C4A35A";
+        ctx.fillRect(x, y, this.width, this.height);
+        ctx.fillStyle = "#8B7040";
+        // Spots
+        ctx.fillRect(x + 5, y + 5, 4, 4);
+        ctx.fillRect(x + 15, y + 10, 4, 4);
+        ctx.fillRect(x + 22, y + 5, 4, 4);
+        // Eyes
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(x + 8, y + 8, 4, 4);
+        ctx.fillRect(x + 20, y + 8, 4, 4);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(x + 9, y + 9, 2, 2);
+        ctx.fillRect(x + 21, y + 9, 2, 2);
+        // Mouth/teeth
+        ctx.fillStyle = "#FFF";
+        ctx.fillRect(x + 10, y + 18, 3, 3);
+        ctx.fillRect(x + 18, y + 18, 3, 3);
         break;
     }
   }

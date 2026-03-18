@@ -23,45 +23,45 @@ export const Chapter2Screen = ({ onStart }: Chapter2ScreenProps) => {
   }, [onStart]);
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col items-center justify-center animate-fade-in">
+    <div className="fixed inset-0 bg-[#2a1a00] flex flex-col items-center justify-center animate-fade-in">
       <div className="text-center space-y-8 animate-scale-in">
-        <h1 className="text-6xl font-bold text-primary animate-pulse">
+        <h1 className="text-6xl font-bold text-amber-400 animate-pulse">
           CHAPTER 2
         </h1>
         
-        <h2 className="text-4xl font-semibold text-foreground">
-          Run for your Life!
+        <h2 className="text-4xl font-semibold text-yellow-300">
+          🦁 Savana Selvagem
         </h2>
         
-        <div className="space-y-4 text-muted-foreground max-w-md">
+        <div className="space-y-4 text-amber-200 max-w-md">
           <p className="text-lg">
-            🏃‍♂️ Corram automaticamente para a direita
+            🦁 Cuidado com os leões famintos!
           </p>
           <p className="text-lg">
-            ⬆️ Pulem sobre obstáculos
+            🦏 Desvie dos rinocerontes furiosos
           </p>
           <p className="text-lg">
-            ⬇️ Abaixem-se para evitar perigos
+            🦅 Abaixe-se para evitar as águias
           </p>
-          <p className="text-lg font-semibold text-primary">
-            🤝 Cooperem para sobreviver!
+          <p className="text-lg font-semibold text-amber-400">
+            🐾 Corram juntos pela savana!
           </p>
         </div>
         
         <div className="mt-8">
           {countdown > 0 ? (
-            <div className="text-8xl font-bold text-primary animate-pulse">
+            <div className="text-8xl font-bold text-amber-400 animate-pulse">
               {countdown}
             </div>
           ) : (
-            <div className="text-4xl font-bold text-primary animate-bounce">
-              GO!
+            <div className="text-4xl font-bold text-yellow-300 animate-bounce">
+              RUGIR!
             </div>
           )}
         </div>
         
-        <div className="text-sm text-muted-foreground">
-          Meta: Percorrer 500 metros
+        <div className="text-sm text-amber-200/70">
+          Meta: Percorrer 1300 metros pela savana
         </div>
       </div>
     </div>

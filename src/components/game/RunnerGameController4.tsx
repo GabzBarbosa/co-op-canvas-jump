@@ -245,15 +245,15 @@ export class RunnerGameController4 {
   private renderHUD() {
     // Theme indicator
     const theme = this.level.getCurrentTheme();
-    let themeColor = "#228B22";
-    let themeName = "FLORESTA";
+    let themeColor = "#DAA520";
+    let themeName = "SAVANA";
     
     if (theme === 'mario') {
-      themeColor = "#5C94FC";
-      themeName = "MARIO WORLD";
+      themeColor = "#00BFFF";
+      themeName = "OCEANO";
     } else if (theme === 'bomberman') {
-      themeColor = "#FF6B35";
-      themeName = "BOMBERMAN";
+      themeColor = "#87CEEB";
+      themeName = "ÁRTICO";
     }
     
     this.ctx.fillStyle = themeColor;
@@ -264,7 +264,7 @@ export class RunnerGameController4 {
     // Boss fight title
     this.ctx.fillStyle = "#FF0000";
     this.ctx.font = "bold 14px monospace";
-    this.ctx.fillText("CHAPTER 5: BOSS FINAL DAS CORRIDAS!", this.canvas.width / 2, 50);
+    this.ctx.fillText("CHAPTER 5: 🌋 VULCÃO DO DRAGÃO!", this.canvas.width / 2, 50);
     
     // Player status
     this.ctx.textAlign = "left";

@@ -222,7 +222,7 @@ export class RunnerGameController3 {
     // Chapter title
     this.ctx.font = "12px monospace";
     this.ctx.textAlign = "left";
-    this.ctx.fillText("CHAPTER 4: BOMBERMAN'S ARENA!", 20, 30);
+    this.ctx.fillText("CHAPTER 4: 🐻‍❄️ ÁRTICO CONGELANTE", 20, 30);
     
     // Difficulty indicator
     const difficulty = this.level.getDifficulty();
@@ -231,17 +231,17 @@ export class RunnerGameController3 {
     
     // Powerups collected
     this.ctx.fillStyle = "#ff6b35";
-    this.ctx.fillText(`⚡ ${this.level.getPowerupsCollected()}`, 20, 70);
+    this.ctx.fillText(`🐟 ${this.level.getPowerupsCollected()}`, 20, 70);
     
     // Controls reminder
     this.ctx.fillStyle = "#FFFFFF";
     this.ctx.textAlign = "right";
     this.ctx.fillText("↑ PULAR (2x)  ↓ ABAIXAR", this.canvas.width - 20, 30);
     
-    // Warning for bombs
-    this.ctx.fillStyle = "#ff6b35";
+    // Warning
+    this.ctx.fillStyle = "#87CEEB";
     this.ctx.font = "10px monospace";
-    this.ctx.fillText("💣 CUIDADO COM AS BOMBAS!", this.canvas.width - 20, 50);
+    this.ctx.fillText("❄️ CUIDADO COM O GELO!", this.canvas.width - 20, 50);
   }
 
   restartLevel() {

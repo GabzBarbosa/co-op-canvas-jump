@@ -159,15 +159,15 @@ export class RunnerGameController5 {
     // Handle powerup collisions
     for (const powerup of collisions.powerups) {
       switch (powerup.type) {
-        case 'star':
+        case 'banana':
           this.shieldActive = true;
           this.shieldTimer = 5;
           break;
-        case 'mushroom':
+        case 'coconut':
           this.speedBoostActive = true;
           this.speedBoostTimer = 3;
           break;
-        case 'heart':
+        case 'flower':
           this.playerHealth = Math.min(5, this.playerHealth + 1);
           break;
       }
@@ -215,7 +215,7 @@ export class RunnerGameController5 {
     this.ctx.fillStyle = "#ff69b4";
     this.ctx.font = "bold 16px Arial";
     this.ctx.textAlign = "left";
-    this.ctx.fillText("💔 DESTRUIR AMIZADES", 10, 25);
+    this.ctx.fillText("🐍 SELVA TROPICAL", 10, 25);
     
     // Distance progress
     const distance = this.level.getDistanceTraveled();
@@ -266,7 +266,7 @@ export class RunnerGameController5 {
     this.ctx.font = "11px Arial";
     this.ctx.textAlign = "right";
     this.ctx.fillText("⬆️/SPACE: Pular | ⬇️: Abaixar", this.canvas.width - 10, 25);
-    this.ctx.fillText("Desvie dos itens que destroem amizades!", this.canvas.width - 10, 40);
+    this.ctx.fillText("Desvie dos animais da selva!", this.canvas.width - 10, 40);
   }
 
   restartLevel() {
