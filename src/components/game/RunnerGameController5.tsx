@@ -215,7 +215,7 @@ export class RunnerGameController5 {
     this.ctx.fillStyle = "#ff69b4";
     this.ctx.font = "bold 16px Arial";
     this.ctx.textAlign = "left";
-    this.ctx.fillText("💔 DESTRUIR AMIZADES", 10, 25);
+    this.ctx.fillText("🐍 SELVA TROPICAL", 10, 25);
     
     // Distance progress
     const distance = this.level.getDistanceTraveled();
