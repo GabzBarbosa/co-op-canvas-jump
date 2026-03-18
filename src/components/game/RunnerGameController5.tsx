@@ -266,7 +266,7 @@ export class RunnerGameController5 {
     this.ctx.font = "11px Arial";
     this.ctx.textAlign = "right";
     this.ctx.fillText("⬆️/SPACE: Pular | ⬇️: Abaixar", this.canvas.width - 10, 25);
-    this.ctx.fillText("Desvie dos itens que destroem amizades!", this.canvas.width - 10, 40);
+    this.ctx.fillText("Desvie dos animais da selva!", this.canvas.width - 10, 40);
   }
 
   restartLevel() {

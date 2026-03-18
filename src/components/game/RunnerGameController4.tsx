@@ -264,7 +264,7 @@ export class RunnerGameController4 {
     // Boss fight title
     this.ctx.fillStyle = "#FF0000";
     this.ctx.font = "bold 14px monospace";
-    this.ctx.fillText("CHAPTER 5: BOSS FINAL DAS CORRIDAS!", this.canvas.width / 2, 50);
+    this.ctx.fillText("CHAPTER 5: 🌋 VULCÃO DO DRAGÃO!", this.canvas.width / 2, 50);
     
     // Player status
     this.ctx.textAlign = "left";

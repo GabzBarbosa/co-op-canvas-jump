@@ -217,7 +217,7 @@ export class RunnerGameController2 {
     
     // Data collected
     this.ctx.fillStyle = "#00ffff";
-    this.ctx.fillText(`💾 ${this.level.getCoinsCollected()} bytes`, 20, 50);
+    this.ctx.fillText(`🐚 ${this.level.getCoinsCollected()} conchas`, 20, 50);
     
     // Controls reminder
     this.ctx.fillStyle = "#00ff88";
