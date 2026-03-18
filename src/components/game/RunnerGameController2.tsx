@@ -213,7 +213,7 @@ export class RunnerGameController2 {
     this.ctx.font = "12px monospace";
     this.ctx.textAlign = "left";
     this.ctx.fillStyle = "#00ff88";
-    this.ctx.fillText("CHAPTER 3: GLITCH DIGITAL", 20, 30);
+    this.ctx.fillText("CHAPTER 3: 🦈 FUNDO DO OCEANO", 20, 30);
     
     // Data collected
     this.ctx.fillStyle = "#00ffff";
