@@ -43,7 +43,8 @@ export class RunnerGameController4 {
     for (let i = 0; i < gameConfig.playerCount; i++) {
       const offset = i * 40;
       const color = gameConfig.colors[`player${i + 1}`] || `hsl(${i * 60}, 70%, 50%)`;
-      const player = new Player(centerX + offset, startPos.y, color, `player${i + 1}`);
+      const charType = (gameConfig.characters?.[`player${i + 1}`] || (i === 0 ? 'tiger' : 'dragon')) as CharacterType;
+      const player = new Player(centerX + offset, startPos.y, color, `player${i + 1}`, charType);
       player.setRunnerMode(true);
       this.players.push(player);
       this.playerShields.push(false);

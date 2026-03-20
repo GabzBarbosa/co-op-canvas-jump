@@ -1,6 +1,6 @@
 import { RunnerLevel4 } from "./RunnerLevel4";
 import { InputHandler } from "./InputHandler";
-import { Player } from "./Player";
+import { Player, CharacterType } from "./Player";
 
 interface RunnerGameCallbacks {
   onPlayerDeath: () => void;
