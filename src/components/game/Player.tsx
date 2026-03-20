@@ -657,6 +657,7 @@ export class Player {
     ctx.fillRect(x + (isMoving ? w - 9 - legFrame * 2 : w - 10), y + h - 3, 5, 3);
   }
 
+  applyPowerUp(type: string) {
     if (type === "speed") {
       this.speedBoostTimer = 5;
     } else if (type === "shield") {
