@@ -3,9 +3,18 @@ import { Card } from "@/components/ui/card";
 import { useState } from "react";
 
 interface TitleScreenProps {
-  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number> }) => void;
+  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number>; characters?: Record<string, string> }) => void;
   showVictory?: boolean;
 }
+
+const characterOptions = [
+  { id: 'tiger', name: '🐯 Tigre', emoji: '🐯' },
+  { id: 'dragon', name: '🐲 Dragão', emoji: '🐲' },
+  { id: 'eagle', name: '🦅 Águia', emoji: '🦅' },
+  { id: 'wolf', name: '🐺 Lobo', emoji: '🐺' },
+  { id: 'bear', name: '🐻 Urso', emoji: '🐻' },
+  { id: 'fox', name: '🦊 Raposa', emoji: '🦊' },
+];
 
 const controlSchemes = [
   { id: 0, name: 'WASD', keys: ['A', 'D', 'W', 'S'] },
