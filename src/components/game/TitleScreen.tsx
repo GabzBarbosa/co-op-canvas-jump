@@ -72,6 +72,13 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     }));
   };
 
+  const handleCharacterSelect = (player: string, characterId: string) => {
+    setSelectedCharacters(prev => ({
+      ...prev,
+      [player]: characterId
+    }));
+  };
+
   const handleStartGame = () => {
     const colors = Object.fromEntries(
       Array.from({ length: playerCount }, (_, i) => [
@@ -85,7 +92,13 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         selectedControls[`player${i + 1}` as keyof typeof selectedControls]
       ])
     );
-    onStartGame({ playerCount, colors, startLevel, mode: selectedMode, runnerLevel, controls });
+    const characters = Object.fromEntries(
+      Array.from({ length: playerCount }, (_, i) => [
+        `player${i + 1}`,
+        selectedCharacters[`player${i + 1}` as keyof typeof selectedCharacters]
+      ])
+    );
+    onStartGame({ playerCount, colors, startLevel, mode: selectedMode, runnerLevel, controls, characters });
   };
 
   return (
