@@ -228,14 +228,38 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
           {Array.from({ length: playerCount }, (_, index) => {
             const playerKey = `player${index + 1}` as keyof typeof selectedColors;
             const controlKey = `player${index + 1}` as keyof typeof selectedControls;
+            const charKey = `player${index + 1}` as keyof typeof selectedCharacters;
             const selectedScheme = controlSchemes[selectedControls[controlKey]];
-            const animalNames = ['🐯 Tigre', '🐲 Dragão', '🦅 Águia', '🐺 Lobo'];
+            const selectedChar = characterOptions.find(c => c.id === selectedCharacters[charKey]);
             
             return (
               <div key={playerKey}>
                 <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors[playerKey] }}>
-                  {animalNames[index] || `Animal ${index + 1}`}
+                  {selectedChar?.name || `Animal ${index + 1}`}
                 </h3>
+                <div className="mb-3">
+                  <p className="text-sm font-medium mb-2">Personagem:</p>
+                  <div className="grid grid-cols-3 gap-1">
+                    {characterOptions.map((char) => (
+                      <button
+                        key={`${playerKey}-char-${char.id}`}
+                        className={`px-1 py-1 text-sm rounded border transition-all ${
+                          selectedCharacters[charKey] === char.id
+                            ? 'border-2 font-bold'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        style={{
+                          backgroundColor: selectedCharacters[charKey] === char.id ? selectedColors[playerKey] : 'transparent',
+                          color: selectedCharacters[charKey] === char.id ? '#fff' : 'inherit',
+                          borderColor: selectedCharacters[charKey] === char.id ? selectedColors[playerKey] : undefined
+                        }}
+                        onClick={() => handleCharacterSelect(charKey, char.id)}
+                      >
+                        {char.emoji} {char.id === 'tiger' ? 'Tigre' : char.id === 'dragon' ? 'Dragão' : char.id === 'eagle' ? 'Águia' : char.id === 'wolf' ? 'Lobo' : char.id === 'bear' ? 'Urso' : 'Raposa'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="mb-3">
                   <p className="text-sm font-medium mb-2">Cor da Pelagem:</p>
                   <div className="grid grid-cols-4 gap-2">
