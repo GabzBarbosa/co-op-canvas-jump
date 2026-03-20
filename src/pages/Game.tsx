@@ -17,7 +17,8 @@ const Game = () => {
     startLevel: 1,
     mode: 'platformer' as 'platformer' | 'runner',
     runnerLevel: 1,
-    controls: {} as Record<string, number>
+    controls: {} as Record<string, number>,
+    characters: {} as Record<string, string>
   });
 
   const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number> }) => {
