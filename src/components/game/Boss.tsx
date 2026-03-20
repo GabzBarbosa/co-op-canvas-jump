@@ -401,5 +401,10 @@ export class Boss {
     this.projectiles = [];
     this.lastShockwaveTime = 0;
     this.animationOffset = 0;
+    this.moveTimer = 0;
+    this.dashTimer = 0;
+    this.isDashing = false;
+    this.position.x = this.startPosition.x;
+    this.position.y = this.startPosition.y;
   }
 }
