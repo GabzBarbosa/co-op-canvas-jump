@@ -51,7 +51,8 @@ export class GameController {
     for (let i = 0; i < gameConfig.playerCount; i++) {
       const offset = (i - (gameConfig.playerCount - 1) / 2) * 64; // Spread players out
       const color = gameConfig.colors[`player${i + 1}`] || `hsl(${i * 60}, 70%, 50%)`;
-      this.players.push(new Player(startPos.x + offset, startPos.y, color, `player${i + 1}`));
+      const charType = (gameConfig.characters?.[`player${i + 1}`] || (i === 0 ? 'tiger' : 'dragon')) as CharacterType;
+      this.players.push(new Player(startPos.x + offset, startPos.y, color, `player${i + 1}`, charType));
     }
   }
 
