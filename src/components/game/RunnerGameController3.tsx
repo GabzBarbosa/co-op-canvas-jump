@@ -1,4 +1,4 @@
-import { Player } from "./Player";
+import { Player, CharacterType } from "./Player";
 import { RunnerLevel3 } from "./RunnerLevel3";
 import { InputHandler } from "./InputHandler";
 import { soundGenerator } from "@/hooks/useSoundEffects";
