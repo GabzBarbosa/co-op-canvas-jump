@@ -1,4 +1,4 @@
-import { Player } from "./Player";
+import { Player, CharacterType } from "./Player";
 import { Level } from "./Level";
 import { InputHandler } from "./InputHandler";
 import { LevelManager } from "./LevelManager";
