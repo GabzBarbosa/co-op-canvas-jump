@@ -21,12 +21,13 @@ const Game = () => {
     characters: {} as Record<string, string>
   });
 
-  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number> }) => {
+  const handleStartGame = (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number>; characters?: Record<string, string> }) => {
     setGameConfig({ 
       ...config, 
       mode: config.mode || 'platformer', 
       runnerLevel: config.runnerLevel || 1,
-      controls: config.controls || {}
+      controls: config.controls || {},
+      characters: config.characters || {}
     });
     if (config.mode === 'runner') {
       if (config.runnerLevel === 5) {
