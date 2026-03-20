@@ -3,9 +3,18 @@ import { Card } from "@/components/ui/card";
 import { useState } from "react";
 
 interface TitleScreenProps {
-  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number> }) => void;
+  onStartGame: (config: { playerCount: number; colors: Record<string, string>; startLevel: number; mode?: 'platformer' | 'runner'; runnerLevel?: number; controls?: Record<string, number>; characters?: Record<string, string> }) => void;
   showVictory?: boolean;
 }
+
+const characterOptions = [
+  { id: 'tiger', name: '🐯 Tigre', emoji: '🐯' },
+  { id: 'dragon', name: '🐲 Dragão', emoji: '🐲' },
+  { id: 'eagle', name: '🦅 Águia', emoji: '🦅' },
+  { id: 'wolf', name: '🐺 Lobo', emoji: '🐺' },
+  { id: 'bear', name: '🐻 Urso', emoji: '🐻' },
+  { id: 'fox', name: '🦊 Raposa', emoji: '🦊' },
+];
 
 const controlSchemes = [
   { id: 0, name: 'WASD', keys: ['A', 'D', 'W', 'S'] },
@@ -42,6 +51,12 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     player3: 2,
     player4: 3
   });
+  const [selectedCharacters, setSelectedCharacters] = useState({
+    player1: 'tiger',
+    player2: 'dragon',
+    player3: 'eagle',
+    player4: 'wolf'
+  });
 
   const handleColorSelect = (player: string, color: string) => {
     setSelectedColors(prev => ({
@@ -54,6 +69,13 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     setSelectedControls(prev => ({
       ...prev,
       [player]: controlId
+    }));
+  };
+
+  const handleCharacterSelect = (player: string, characterId: string) => {
+    setSelectedCharacters(prev => ({
+      ...prev,
+      [player]: characterId
     }));
   };
 
@@ -70,7 +92,13 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
         selectedControls[`player${i + 1}` as keyof typeof selectedControls]
       ])
     );
-    onStartGame({ playerCount, colors, startLevel, mode: selectedMode, runnerLevel, controls });
+    const characters = Object.fromEntries(
+      Array.from({ length: playerCount }, (_, i) => [
+        `player${i + 1}`,
+        selectedCharacters[`player${i + 1}` as keyof typeof selectedCharacters]
+      ])
+    );
+    onStartGame({ playerCount, colors, startLevel, mode: selectedMode, runnerLevel, controls, characters });
   };
 
   return (
@@ -200,14 +228,38 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
           {Array.from({ length: playerCount }, (_, index) => {
             const playerKey = `player${index + 1}` as keyof typeof selectedColors;
             const controlKey = `player${index + 1}` as keyof typeof selectedControls;
+            const charKey = `player${index + 1}` as keyof typeof selectedCharacters;
             const selectedScheme = controlSchemes[selectedControls[controlKey]];
-            const animalNames = ['🐯 Tigre', '🐲 Dragão', '🦅 Águia', '🐺 Lobo'];
+            const selectedChar = characterOptions.find(c => c.id === selectedCharacters[charKey]);
             
             return (
               <div key={playerKey}>
                 <h3 className="text-lg font-bold mb-2" style={{ color: selectedColors[playerKey] }}>
-                  {animalNames[index] || `Animal ${index + 1}`}
+                  {selectedChar?.name || `Animal ${index + 1}`}
                 </h3>
+                <div className="mb-3">
+                  <p className="text-sm font-medium mb-2">Personagem:</p>
+                  <div className="grid grid-cols-3 gap-1">
+                    {characterOptions.map((char) => (
+                      <button
+                        key={`${playerKey}-char-${char.id}`}
+                        className={`px-1 py-1 text-sm rounded border transition-all ${
+                          selectedCharacters[charKey] === char.id
+                            ? 'border-2 font-bold'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        style={{
+                          backgroundColor: selectedCharacters[charKey] === char.id ? selectedColors[playerKey] : 'transparent',
+                          color: selectedCharacters[charKey] === char.id ? '#fff' : 'inherit',
+                          borderColor: selectedCharacters[charKey] === char.id ? selectedColors[playerKey] : undefined
+                        }}
+                        onClick={() => handleCharacterSelect(charKey, char.id)}
+                      >
+                        {char.emoji} {char.id === 'tiger' ? 'Tigre' : char.id === 'dragon' ? 'Dragão' : char.id === 'eagle' ? 'Águia' : char.id === 'wolf' ? 'Lobo' : char.id === 'bear' ? 'Urso' : 'Raposa'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="mb-3">
                   <p className="text-sm font-medium mb-2">Cor da Pelagem:</p>
                   <div className="grid grid-cols-4 gap-2">

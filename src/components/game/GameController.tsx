@@ -1,4 +1,4 @@
-import { Player } from "./Player";
+import { Player, CharacterType } from "./Player";
 import { Level } from "./Level";
 import { InputHandler } from "./InputHandler";
 import { LevelManager } from "./LevelManager";
@@ -31,7 +31,7 @@ export class GameController {
   private readonly targetFPS = 60;
   private readonly frameTime = 1000 / this.targetFPS;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; startLevel?: number; controls?: Record<string, number> }) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; startLevel?: number; controls?: Record<string, number>; characters?: Record<string, string> }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
@@ -51,7 +51,8 @@ export class GameController {
     for (let i = 0; i < gameConfig.playerCount; i++) {
       const offset = (i - (gameConfig.playerCount - 1) / 2) * 64; // Spread players out
       const color = gameConfig.colors[`player${i + 1}`] || `hsl(${i * 60}, 70%, 50%)`;
-      this.players.push(new Player(startPos.x + offset, startPos.y, color, `player${i + 1}`));
+      const charType = (gameConfig.characters?.[`player${i + 1}`] || (i === 0 ? 'tiger' : 'dragon')) as CharacterType;
+      this.players.push(new Player(startPos.x + offset, startPos.y, color, `player${i + 1}`, charType));
     }
   }
 

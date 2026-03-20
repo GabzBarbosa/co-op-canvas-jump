@@ -12,7 +12,7 @@ interface GameCanvasProps {
   onVictory: () => void;
   onRestart: () => void;
   onLevelComplete: () => void;
-  gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number; controls?: Record<string, number> };
+  gameConfig: { playerCount: number; colors: Record<string, string>; startLevel: number; controls?: Record<string, number>; characters?: Record<string, string> };
   mode?: "platformer" | "runner" | "runner2" | "runner3" | "runner4" | "runnerBoss";
 }
 

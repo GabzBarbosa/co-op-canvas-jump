@@ -1,4 +1,4 @@
-import { Player } from "./Player";
+import { Player, CharacterType } from "./Player";
 import { RunnerBossLevel } from "./RunnerBossLevel";
 import { InputHandler } from "./InputHandler";
 import { soundGenerator } from "@/hooks/useSoundEffects";
@@ -27,7 +27,7 @@ export class RunnerGameController4 {
   private playerShields: boolean[] = [];
   private playerSpeedBoosts: number[] = [];
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: RunnerGameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; controls?: Record<string, number> }) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: RunnerGameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; controls?: Record<string, number>; characters?: Record<string, string> }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
@@ -43,7 +43,8 @@ export class RunnerGameController4 {
     for (let i = 0; i < gameConfig.playerCount; i++) {
       const offset = i * 40;
       const color = gameConfig.colors[`player${i + 1}`] || `hsl(${i * 60}, 70%, 50%)`;
-      const player = new Player(centerX + offset, startPos.y, color, `player${i + 1}`);
+      const charType = (gameConfig.characters?.[`player${i + 1}`] || (i === 0 ? 'tiger' : 'dragon')) as CharacterType;
+      const player = new Player(centerX + offset, startPos.y, color, `player${i + 1}`, charType);
       player.setRunnerMode(true);
       this.players.push(player);
       this.playerShields.push(false);
