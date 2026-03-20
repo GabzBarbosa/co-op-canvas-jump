@@ -182,10 +182,14 @@ export class Player {
     const isMoving = Math.abs(this.velocity.x) > 10;
     const legFrame = Math.floor(this.animTime * 6) % 2;
     
-    if (this.id === "player1") {
-      this.renderTiger(ctx, x, y, isMoving, legFrame);
-    } else {
-      this.renderDragon(ctx, x, y, isMoving, legFrame);
+    switch (this.characterType) {
+      case 'tiger': this.renderTiger(ctx, x, y, isMoving, legFrame); break;
+      case 'dragon': this.renderDragon(ctx, x, y, isMoving, legFrame); break;
+      case 'eagle': this.renderEagle(ctx, x, y, isMoving, legFrame); break;
+      case 'wolf': this.renderWolf(ctx, x, y, isMoving, legFrame); break;
+      case 'bear': this.renderBear(ctx, x, y, isMoving, legFrame); break;
+      case 'fox': this.renderFox(ctx, x, y, isMoving, legFrame); break;
+      default: this.renderTiger(ctx, x, y, isMoving, legFrame);
     }
     
     // Goal indicator
