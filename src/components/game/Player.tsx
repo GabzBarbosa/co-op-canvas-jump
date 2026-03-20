@@ -1,3 +1,5 @@
+export type CharacterType = 'tiger' | 'dragon' | 'eagle' | 'wolf' | 'bear' | 'fox';
+
 export class Player {
   position: { x: number; y: number };
   velocity: { x: number; y: number };
@@ -5,6 +7,7 @@ export class Player {
   height: number = 32;
   color: string;
   id: string;
+  characterType: CharacterType;
   grounded: boolean = false;
   inGoal: boolean = false;
   private jumpsUsed: number = 0;
@@ -35,11 +38,12 @@ export class Player {
   private startY: number;
   private animTime = 0;
 
-  constructor(x: number, y: number, color: string, id: string) {
+  constructor(x: number, y: number, color: string, id: string, characterType: CharacterType = 'tiger') {
     this.position = { x, y };
     this.velocity = { x: 0, y: 0 };
     this.color = color;
     this.id = id;
+    this.characterType = characterType;
     this.startX = x;
     this.startY = y;
   }
