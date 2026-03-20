@@ -31,7 +31,7 @@ export class GameController {
   private readonly targetFPS = 60;
   private readonly frameTime = 1000 / this.targetFPS;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; startLevel?: number; controls?: Record<string, number> }) {
+  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, gameConfig: { playerCount: number; colors: Record<string, string>; startLevel?: number; controls?: Record<string, number>; characters?: Record<string, string> }) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.callbacks = callbacks;
