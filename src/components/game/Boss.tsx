@@ -2,6 +2,7 @@ import { Projectile } from "./Projectile";
 
 export class Boss {
   public position: { x: number; y: number };
+  private startPosition: { x: number; y: number };
   public width: number = 128;
   public height: number = 128;
   public maxHealth: number = 100;
@@ -15,8 +16,23 @@ export class Boss {
   private lastShockwaveTime: number = 0;
   private animationOffset: number = 0;
 
+  // Movement
+  private moveTimer: number = 0;
+  private moveTargetX: number = 0;
+  private moveTargetY: number = 0;
+  private moveSpeed: number = 80;
+  private dashTimer: number = 0;
+  private isDashing: boolean = false;
+  private dashTargetX: number = 0;
+  private dashTargetY: number = 0;
+  private canvasWidth: number = 800;
+  private canvasHeight: number = 450;
+
   constructor(x: number, y: number) {
     this.position = { x, y };
+    this.startPosition = { x, y };
+    this.moveTargetX = x;
+    this.moveTargetY = y;
   }
 
   update(deltaTime: number) {
@@ -32,6 +48,10 @@ export class Boss {
 
     this.attackTimer += deltaTime;
     this.animationOffset += deltaTime;
+    this.moveTimer += deltaTime;
+
+    // Movement logic per phase
+    this.updateMovement(deltaTime);
 
     const attackInterval = this.currentPhase === 3 ? 1.5 : this.attackCooldown;
     
@@ -48,6 +68,74 @@ export class Boss {
     if (this.currentHealth <= 0 && !this.isDefeated) {
       this.isDefeated = true;
     }
+  }
+
+  private updateMovement(deltaTime: number) {
+    const minX = 200;
+    const maxX = this.canvasWidth - this.width - 20;
+    const minY = 40;
+    const maxY = this.canvasHeight - this.height - 80;
+
+    if (this.isDashing) {
+      // Fast dash toward target
+      const dx = this.dashTargetX - this.position.x;
+      const dy = this.dashTargetY - this.position.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 5) {
+        this.isDashing = false;
+      } else {
+        const speed = 300;
+        this.position.x += (dx / dist) * speed * deltaTime;
+        this.position.y += (dy / dist) * speed * deltaTime;
+      }
+      return;
+    }
+
+    switch (this.currentPhase) {
+      case 1:
+        // Slow side-to-side patrol
+        this.position.x = this.startPosition.x + Math.sin(this.moveTimer * 0.8) * 120;
+        this.position.y = this.startPosition.y + Math.sin(this.moveTimer * 0.5) * 30;
+        break;
+
+      case 2:
+        // Pick new random targets periodically
+        if (this.moveTimer > 2.5) {
+          this.moveTimer = 0;
+          this.moveTargetX = minX + Math.random() * (maxX - minX);
+          this.moveTargetY = minY + Math.random() * (maxY - minY);
+        }
+        // Smooth move toward target
+        const dx2 = this.moveTargetX - this.position.x;
+        const dy2 = this.moveTargetY - this.position.y;
+        const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        if (dist2 > 3) {
+          const speed2 = this.moveSpeed * 1.5;
+          this.position.x += (dx2 / dist2) * speed2 * deltaTime;
+          this.position.y += (dy2 / dist2) * speed2 * deltaTime;
+        }
+        break;
+
+      case 3:
+        // Aggressive: random dashes + circular movement
+        this.dashTimer += deltaTime;
+        if (this.dashTimer > 2) {
+          this.dashTimer = 0;
+          this.isDashing = true;
+          this.dashTargetX = minX + Math.random() * (maxX - minX);
+          this.dashTargetY = minY + Math.random() * (maxY - minY);
+        }
+        // Circular orbit when not dashing
+        const cx = this.canvasWidth / 2 - this.width / 2;
+        const cy = this.canvasHeight / 2 - this.height / 2 - 30;
+        this.position.x = cx + Math.cos(this.moveTimer * 1.5) * 150;
+        this.position.y = cy + Math.sin(this.moveTimer * 2) * 60;
+        break;
+    }
+
+    // Clamp to bounds
+    this.position.x = Math.max(minX, Math.min(maxX, this.position.x));
+    this.position.y = Math.max(minY, Math.min(maxY, this.position.y));
   }
 
   private performAttack() {
@@ -313,5 +401,10 @@ export class Boss {
     this.projectiles = [];
     this.lastShockwaveTime = 0;
     this.animationOffset = 0;
+    this.moveTimer = 0;
+    this.dashTimer = 0;
+    this.isDashing = false;
+    this.position.x = this.startPosition.x;
+    this.position.y = this.startPosition.y;
   }
 }
