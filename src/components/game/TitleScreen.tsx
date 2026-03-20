@@ -51,6 +51,12 @@ export const TitleScreen = ({ onStartGame, showVictory = false }: TitleScreenPro
     player3: 2,
     player4: 3
   });
+  const [selectedCharacters, setSelectedCharacters] = useState({
+    player1: 'tiger',
+    player2: 'dragon',
+    player3: 'eagle',
+    player4: 'wolf'
+  });
 
   const handleColorSelect = (player: string, color: string) => {
     setSelectedColors(prev => ({
